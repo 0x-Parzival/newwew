@@ -1,85 +1,100 @@
 #!/bin/bash
+# Kalki OS First Boot Wizard (Avatar Onboarding)
 set -euo pipefail
 
-# Kalki OS First Boot Wizard - Fully Automated
-# Auto-launches, defaults to safe options, and minimizes user input
+CONFIG_DIR="$HOME/.config"
+CONFIG_FILE="$CONFIG_DIR/kalki-onboarding.json"
+AUTOSTART_ENTRY="$HOME/.config/autostart/kalki-first-boot-wizard.desktop"
 
-if [[ $EUID -ne 0 ]]; then
-  echo "[ERROR] This script must be run as root." >&2
-  exit 1
-fi
-
-LOG_FILE="/var/log/first-boot-wizard.log"
-VIDEO_FILE="/usr/share/kalki/avatarintro.mp4" # Placeholder path
-AVATAR_LIST=(
-  "🐭 Mushak - Debugger"
-  "🐂 Nandi - Finance"
-  "🐯 Shera - Security"
-  "🐰 Bunni - Creative"
-  "🐉 Kalkian - Dev Mode"
-  "🐍 Nag - Strategy"
-  "🐎 Chetak - Productivity"
-  "🐐 G.O.A.T. - Music & Vibe"
-  "🐒 Monki - Hinglish Fun"
-  "🐓 Roosty - Scheduling"
-  "🐕 Chew-Chew - Security Watchdog"
-  "🐖 Chill Pig - Wellness"
+# Avatar data
+AVATAR_NAMES=(
+  "Mushak" "Nandi" "Shera" "Bunni" "Kalkian" "Nag" "Chetak" "G.O.A.T." "Monki" "Roosty" "Chew-Chew" "The Chill Pig"
+)
+AVATAR_ICONS=(
+  "🐭" "🐂" "🐯" "🐰" "🐉" "🐍" "🐎" "🐐" "🐒" "🐓" "🐕" "🐖"
+)
+AVATAR_ROLES=(
+  "Debugger of Chaos"
+  "Financial Guardian"
+  "Cybersecurity Sentinel"
+  "Creative Companion"
+  "Divine Developer Mode"
+  "Strategist & Analyst"
+  "Productivity Commander"
+  "Vibes & Design Wizard"
+  "Gesture + Hinglish Agent"
+  "Scheduler & Timekeeper"
+  "Security Watchdog"
+  "Mood & Wellness Guide"
+)
+AVATAR_GREETINGS=(
+  "Yo! I already found 3 bugs before you even booted. Ready to squash some chaos?"
+  "Your wealth stands strong. Markets synced. Portfolios protected. Let's keep it stable."
+  "No intruder shall pass. Your firewalls are fortified. I'm watching everything."
+  "Let's make something beautiful today — words, code, or art. I've got palettes preloaded!"
+  "You are now in divine dev mode. Command wisely, for all power is yours."
+  "Every move matters. I've calculated your optimal flow. Proceed when ready."
+  "Time's racing, and so are we. I've queued your tasks and mapped your sprint. Let's ride!"
+  "Vibes are optimal. Fonts are fresh. Beats are synced. Let's create some GOAT-level work."
+  "Oye bro! No typing, just vibing. Wink, wave, or say the word — Monki's got you."
+  "Rise and sync! All tasks aligned. You've got 3 goals, 2 meetings, and 1 perfect day."
+  "System perimeter clear. No threats sniffed. Chew-Chew on duty, as always."
+  "Breathe in. Breathe out. Your mind is a temple. Let's work... but not burn out."
 )
 
-log() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
-}
+# Welcome dialog
+zenity --info --title="Welcome to Kalki OS!" --width=400 --text="\
+Welcome to Kalki OS — your AI-powered, modular, privacy-focused Linux experience!\n\nLet's get you set up with your own AI companion and show you the best features.\n\n(You can skip onboarding at any time.)"
+if [[ $? -ne 0 ]]; then exit 0; fi
 
-# 1. Prompt for install mode with timeout
-INSTALL_MODE="dualboot" # Default
-if command -v zenity &>/dev/null; then
-  (sleep 30 && kill $$) &
-  zenity --question --title="Kalki OS Setup" \
-    --text="Welcome to Kalki OS!\n\nDo you want to replace your current OS or set up dual boot?\n\n(Default: Dual Boot in 30s)" \
-    --ok-label="Replace OS" --cancel-label="Dual Boot" && INSTALL_MODE="replace"
-else
-  (sleep 30 && kill $$) &
-  whiptail --title "Kalki OS Setup" --yesno "Do you want to replace your current OS?\nChoose No for Dual Boot.\n\n(Default: Dual Boot in 30s)" 10 60 && INSTALL_MODE="replace"
-fi
-log "User selected install mode: $INSTALL_MODE"
+# Feature highlights
+zenity --info --title="Kalki OS Features" --width=400 --text="\
+• 12 unique AI avatars, each with a special role\n• Proactive AI help, automation, and natural language commands\n• Instant system rollback & recovery\n• Privacy-first controls\n• Beautiful, modern UI\n• App store with best-in-class tools\n\nLet's pick your AI companion!"
+if [[ $? -ne 0 ]]; then exit 0; fi
 
-# 2. Play intro video and show progress bar overlay
-if [ -f "$VIDEO_FILE" ]; then
-  log "Playing intro video: $VIDEO_FILE"
-  # Start AI installer in background with progress
-  ( 
-    /usr/share/kalki/ai-auto-installer.sh "$INSTALL_MODE" | while read -r line; do
-      echo "$line"
-    done
-  ) &
-  AI_PID=$!
-  if command -v zenity &>/dev/null; then
-    (sleep 2; zenity --progress --title="Kalki OS Installation" --text="Setting up your system..." --pulsate --auto-close --no-cancel) &
+# Avatar selection
+AVATAR_LIST=""
+for i in "${!AVATAR_NAMES[@]}"; do
+  AVATAR_LIST+="${AVATAR_ICONS[$i]} ${AVATAR_NAMES[$i]} — ${AVATAR_ROLES[$i]}\n"
+done
+AVATAR_CHOICE=$(zenity --list --title="Choose Your AI Avatar" --column="Avatar" --width=500 --height=400 \
+  $(for i in "${!AVATAR_NAMES[@]}"; do echo "${AVATAR_ICONS[$i]} ${AVATAR_NAMES[$i]} — ${AVATAR_ROLES[$i]}"; done))
+if [[ $? -ne 0 || -z "${AVATAR_CHOICE:-}" ]]; then exit 0; fi
+
+# Show greeting for selected avatar
+for i in "${!AVATAR_NAMES[@]}"; do
+  if [[ "$AVATAR_CHOICE" == "${AVATAR_ICONS[$i]} ${AVATAR_NAMES[$i]} — ${AVATAR_ROLES[$i]}" ]]; then
+    AVATAR_SELECTED="${AVATAR_NAMES[$i]}"
+    AVATAR_GREETING="${AVATAR_GREETINGS[$i]}"
+    break
   fi
-  mpv --fs --no-border --quiet "$VIDEO_FILE"
-  wait $AI_PID || (zenity --error --text="Install failed. Click Retry." && exec "$0")
-else
-  log "Intro video not found: $VIDEO_FILE"
-fi
+done
+zenity --info --title="${AVATAR_SELECTED} says hi!" --width=400 --text="${AVATAR_GREETING}"
+if [[ $? -ne 0 ]]; then exit 0; fi
 
-# 3. Avatar selection menu with timeout
-AVATAR=""
-if command -v zenity &>/dev/null; then
-  (sleep 30 && kill $$) &
-  AVATAR=$(zenity --list --title="Choose Your AI Companion" --column="Avatar" "${AVATAR_LIST[@]}")
-else
-  (sleep 30 && kill $$) &
-  AVATAR=$(whiptail --title "Choose Your AI Companion" --menu "Select your AI companion avatar:\n(Default: Random in 30s)" 20 60 12 \
-    $(for i in "${AVATAR_LIST[@]}"; do echo "$i"; done) 3>&1 1>&2 2>&3)
-fi
-if [ -z "$AVATAR" ]; then
-  AVATAR=${AVATAR_LIST[$((RANDOM % 12))]}
-  log "No avatar selected, assigned random: $AVATAR"
-else
-  log "User selected avatar: $AVATAR"
-fi
+# Privacy and snapshot options
+zenity --question --title="Enable Privacy Mode?" --width=400 --text="\
+Kalki OS can maximize your privacy by restricting telemetry, disabling cloud sync, and sandboxing AI features.\n\nEnable Privacy Mode? (Recommended)"
+PRIVACY_ENABLED=$?
+zenity --question --title="Enable Auto-Snapshots?" --width=400 --text="\
+Kalki OS can automatically create system snapshots before major changes, so you can always roll back.\n\nEnable Auto-Snapshots? (Recommended)"
+SNAPSHOT_ENABLED=$?
 
-# TODO: Save avatar choice for user profile
-# TODO: Integrate with real AI installer and video asset
+# Save config
+mkdir -p "$CONFIG_DIR"
+cat > "$CONFIG_FILE" <<EOF
+{
+  "avatar": "$AVATAR_SELECTED",
+  "privacy_mode": $([[ $PRIVACY_ENABLED -eq 0 ]] && echo true || echo false),
+  "auto_snapshots": $([[ $SNAPSHOT_ENABLED -eq 0 ]] && echo true || echo false)
+}
+EOF
 
-log "First boot wizard complete." 
+# Goodbye
+zenity --info --title="All set!" --width=400 --text="\
+You're ready to experience Kalki OS.\n\nYou can change your avatar or settings anytime in System Settings.\n\nCheck out the handbook for tips, and enjoy your new OS!"
+
+# Remove from autostart
+rm -f "$AUTOSTART_ENTRY"
+
+exit 0 

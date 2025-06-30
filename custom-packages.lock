@@ -1,0 +1,6 @@
+# custom-packages.lock
+# Pin custom/critical package versions for reproducible builds.
+# Format: name version [repo]
+# Example:
+# my-custom-pkg 1.2.3 https://my.repo/url
+# another-pkg 2.0.1 

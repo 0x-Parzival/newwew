@@ -1,0 +1,4 @@
+  File "./iso-profile/kalki-base/airootfs/opt/kalki/avatars/tools/bunni/creative_studio.py", line 50
+    'You know what's cool?',
+                          ^
+SyntaxError: unterminated string literal (detected at line 50)

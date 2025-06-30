@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=System Restore
+Comment=Restore or snapshot your system with Kalki OS
+Exec=/usr/bin/env bash /opt/kalki/scripts/kalki-rollback-gui.sh
+Icon=system-restore
+Terminal=false
+Categories=System;Settings;Utility;
+Keywords=rollback;snapshot;restore;backup; 
