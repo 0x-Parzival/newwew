@@ -1,0 +1,12 @@
+[Unit]
+Description=Kalki OS Application Management Service
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/opt/kalki/scripts/app-startup-manager.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

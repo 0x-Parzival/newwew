@@ -1,0 +1,46 @@
+# Script for the Kalki Dharma Plymouth theme
+
+# Get screen dimensions
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+# Load images
+om_symbol = Image("om-symbol.png");
+
+# Get screen dimensions
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+# Calculate positions
+om_x = (screen_width - om_symbol.GetWidth()) / 2;
+om_y = (screen_height - om_symbol.GetHeight()) / 2;
+
+# Animation function
+fun pulse (scale_factor, scale_duration) {
+    return Math.Tween(1.0, scale_factor, 0.5, 0.5, Math.SineEaseInOut);
+}
+
+# Main animation loop
+fun refresh_callback() {
+    # Clear screen
+    Window.DrawRectangle(0, 0, 0, 0, 0, 1);
+    
+    # Draw pulsing OM symbol
+    scale = pulse(1.1, 2.0);
+    om_symbol.SetZ(100);
+    om_symbol.SetScale(scale, scale);
+    om_symbol.SetPosition(om_x, om_y);
+    om_symbol.Render();
+    
+    # Show boot status
+    boot_status = Plymouth.GetBootStatus();
+    if (boot_status != "") {
+        text = Text.New(boot_status);
+        text.SetColor(1, 1, 1, 1);
+        text.SetPosition(screen_width / 2 - text.GetWidth() / 2, om_y + 200);
+        text.Render();
+    }
+}
+
+# Set up the refresh callback
+Plymouth.SetRefreshFunction(refresh_callback);

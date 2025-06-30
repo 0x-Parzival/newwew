@@ -1,0 +1,21 @@
+[Unit]
+Description=Kalki OS Virtual Machine
+After=network.target libvirtd.service
+Requires=libvirtd.service
+
+[Service]
+Type=simple
+User=%i
+Group=libvirt
+Environment="DISPLAY=:0"
+Environment="XDG_RUNTIME_DIR=/run/user/$(id -u)"
+ExecStartPre=/usr/bin/bash -c 'if ! virsh list --name | grep -q kalki-vm; then \
+    virsh create /etc/libvirt/qemu/kalki-vm.xml || exit 1; \
+fi'
+ExecStart=/usr/bin/virt-viewer --connect qemu:///system kalki-vm --wait
+ExecStop=/usr/bin/virsh shutdown kalki-vm
+TimeoutStopSec=5
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

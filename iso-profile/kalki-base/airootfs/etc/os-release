@@ -1,0 +1,14 @@
+NAME="Kalki OS"
+PRETTY_NAME="Kalki OS - Dharmic Computing Platform"
+ID=kalki
+ID_LIKE=linux
+BUILD_ID=rolling
+ANSI_COLOR="1;35"
+HOME_URL="https://kalki.os/"
+DOCUMENTATION_URL="https://docs.kalki.os/"
+SUPPORT_URL="https://community.kalki.os/"
+BUG_REPORT_URL="https://github.com/kalki-os/issues"
+VERSION_ID="2025.06"
+VERSION="2025.06 (Enlightenment)"
+VERSION_CODENAME=enlightenment
+LOGO=kalki-logo

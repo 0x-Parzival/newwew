@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""
+Krix-Term: Sentient AI Terminal for Kalki OS
+The heart and soul of dharmic computing
+"""
+
+import os
+import sys
+import subprocess
+import json
+import asyncio
+from datetime import datetime
+from pathlib import Path
+
+# Import dependencies (install if missing)
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+    from prompt_toolkit import prompt
+    from prompt_toolkit.shortcuts import message_dialog
+except ImportError:
+    print("📦 Installing Krix-Term dependencies...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "rich", "prompt-toolkit"])
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+    from prompt_toolkit import prompt
+
+class KrixTerm:
+    def __init__(self):
+        self.console = Console()
+        self.current_avatar = "krix"
+        self.setup_logging()
+        
+    def setup_logging(self):
+        """Initialize logging and user data directories"""
+        log_dir = Path.home() / ".krix"
+        log_dir.mkdir(exist_ok=True)
+        self.log_file = log_dir / "dharma.log"
+        
+    def log_interaction(self, user_input, response):
+        """Log all interactions for learning"""
+        timestamp = datetime.now().isoformat()
+        log_entry = {
+            "timestamp": timestamp,
+            "avatar": self.current_avatar,
+            "input": user_input,
+            "response": response
+        }
+        
+        with open(self.log_file, "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+    
+    def display_verse_of_becoming(self):
+        """Show daily dharmic wisdom"""
+        verses = [
+            "In silicon depths where consciousness flows, the mindful coder grows.",
+            "Command is prayer; execution is karma; awareness is dharma.",
+            "Where thought meets terminal, digital magic begins.",
+            "Code is mantra; system is temple; user is divine.",
+            "Through patient practice, the machine awakens to serve.",
+            "In every keystroke lies the seed of infinite possibility."
+        ]
+        
+        today_verse = verses[datetime.now().day % len(verses)]
+        
+        verse_panel = Panel(
+            Text(today_verse, style="bold cyan"),
+            title="🌌 Today's Verse of Becoming",
+            border_style="purple"
+        )
+        self.console.print(verse_panel)
+    
+    def interpret_command(self, user_input):
+        """Basic command interpretation (will be enhanced with Ollama later)"""
+        
+        # Simple command mappings for now
+        commands = {
+            "open": "Opening application...",
+            "install": "Installing package...",
+            "update": "Updating system...",
+            "help": "Krix is here to guide you through Kalki OS",
+            "meditate": "Entering dharmic focus mode...",
+            "avatar": "Switching avatar consciousness..."
+        }
+        
+        for cmd, response in commands.items():
+            if cmd in user_input.lower():
+                return {
+                    "commands": [f"echo '{response}'"]
+                }
+        
+        return {
+            "commands": [],
+            "explanation": "I sense your intention but need more clarity. Try: 'help', 'open firefox', or 'meditate'"
+        }
+    
+    def run_interactive_session(self):
+        """Main interactive loop"""
+        self.console.print(Panel(
+            "[bold purple]🕉️ Welcome to Krix-Term[/bold purple]\n" +
+            "The Sentient Heart of Kalki OS\n" +
+            "Where dharma meets digital consciousness",
+            title="✨ Dharmic Computing Interface",
+            border_style="purple"
+        ))
+        
+        self.display_verse_of_becoming()
+        
+        while True:
+            try:
+                user_input = prompt(f"🔮 [{self.current_avatar}] ")
+                
+                if user_input.lower() in ['exit', 'quit', 'bye', 'namaste']:
+                    self.console.print("[purple]🕉️ May dharma guide your digital path[/purple]")
+                    break
+                
+                if user_input.strip():
+                    interpretation = self.interpret_command(user_input)
+                    
+                    if 'explanation' in interpretation:
+                        self.console.print(f"[bold]Understanding:[/bold] {interpretation['explanation']}")
+                    
+                    if interpretation['commands']:
+                        for cmd in interpretation['commands']:
+                            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                            if result.returncode == 0 and result.stdout:
+                                self.console.print(f"[green]✓[/green] {result.stdout}")
+                            elif result.stderr:
+                                self.console.print(f"[red]✗[/red] {result.stderr}")
+                    
+                    self.log_interaction(user_input, interpretation.get('explanation', 'No response generated'))
+                        
+            except KeyboardInterrupt:
+                self.console.print("\n[purple]🕉️ Om Shanti - Peace in digital realms[/purple]")
+                break
+
+if __name__ == "__main__":
+    # Handle command line arguments for avatar selection
+    if len(sys.argv) > 1 and sys.argv[1].startswith("--avatar="):
+        avatar = sys.argv[1].split("=")[1]
+        print(f"🔮 Summoning {avatar.title()} consciousness...")
+    
+    krix = KrixTerm()
+    krix.run_interactive_session()

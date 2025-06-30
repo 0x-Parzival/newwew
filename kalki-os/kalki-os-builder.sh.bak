@@ -1,0 +1,516 @@
+#!/bin/bash
+set -euo pipefail
+
+# Kalki OS Automated Build Script
+# Based on comprehensive ArchISO implementation guide
+
+# ANSI Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Dharmic symbols for visual appeal
+OM_SYMBOL="🕉️"
+KALKI_SYMBOL="⚔️"
+SUCCESS_SYMBOL="✅"
+ERROR_SYMBOL="❌"
+BUILDING_SYMBOL="🔨"
+TESTING_SYMBOL="🧪"
+
+# Function to print colored output
+print_status() {
+    local color=$1
+    local symbol=$2
+    local message=$3
+    echo -e "${color}${symbol} ${message}${NC}"
+}
+
+print_header() {
+    echo -e "${PURPLE}================================================${NC}"
+    echo -e "${PURPLE}${OM_SYMBOL}     KALKI OS - DHARMIC COMPUTING     ${OM_SYMBOL}${NC}"
+    echo -e "${PURPLE}         ArchISO Build System${NC}"
+    echo -e "${PURPLE}================================================${NC}"
+    echo
+}
+
+check_dependencies() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Checking build dependencies..."
+
+    local deps=("archiso" "git" "qemu-system-x86_64" "mkarchiso")
+    local missing_deps=()
+
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &> /dev/null; then
+            missing_deps+=("$dep")
+        fi
+    done
+
+    if [ ${#missing_deps[@]} -ne 0 ]; then
+        print_status "$RED" "$ERROR_SYMBOL" "Missing dependencies: ${missing_deps[*]}"
+        echo "Please install them with:"
+        echo "sudo pacman -S archiso base-devel git qemu-full libvirt"
+        exit 1
+    fi
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "All dependencies found"
+}
+
+create_project_structure() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Creating Kalki OS project structure..."
+
+    # Create directory structure
+    mkdir -p ~/kalki-os-project/{iso-profile,ai-components,avatar-system,security-layer}
+    mkdir -p ~/kalki-os-project/{gesture-interface,identity-engine,media-assets,testing-framework}
+
+    cd ~/kalki-os-project
+
+    # Copy ArchISO foundation
+    if [ ! -d "iso-profile/kalki-base" ]; then
+        cp -r /usr/share/archiso/configs/releng/ iso-profile/kalki-base
+    fi
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Project structure created"
+}
+
+configure_iso_profile() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring ISO profile..."
+
+    cd ~/kalki-os-project/iso-profile/kalki-base
+
+    # Create profiledef.sh
+    cat > profiledef.sh << 'EOF'
+iso_name="kalki"
+iso_label="KALKI_OS"
+iso_publisher="Krix Collective <dharma@kalki.os>"
+iso_application="Kalki OS - Dharmic Computing Platform"
+iso_version="$(date +%Y.%m.%d)"
+install_dir="kalki"
+bootmodes=('bios.syslinux.mbr' 'uefi-x64.systemd-boot.esp')
+arch="x86_64"
+pacman_conf="pacman.conf"
+airootfs_image_type="squashfs"
+airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15')
+file_permissions=(
+  ["/etc/shadow"]="0:0:0400"
+  ["/etc/gshadow"]="0:0:0400"
+  ["/root"]="0:0:750"
+)
+EOF
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "ISO profile configured"
+}
+
+configure_packages() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring package manifest..."
+
+    # Create comprehensive package list
+    cat > packages.x86_64 << 'EOF'
+# Base System
+base
+linux-zen
+linux-zen-headers
+linux-firmware
+intel-ucode
+amd-ucode
+
+# Boot and Display
+plymouth
+sddm
+xorg-server
+
+# Hyprland Desktop Environment
+hyprland
+waybar
+wofi
+mako
+alacritty
+thunar
+hyprpaper
+xdg-desktop-portal-hyprland
+
+# Graphics and Drivers
+mesa
+vulkan-intel
+vulkan-radeon
+
+# AI and Development
+python
+python-pip
+git
+base-devel
+neovim
+rust
+
+# Audio System
+pipewire
+pipewire-alsa
+pipewire-pulse
+wireplumber
+
+# Network and System
+networkmanager
+network-manager-applet
+firefox
+btrfs-progs
+zram-generator
+
+# Multimedia and Fonts
+mpv
+ttf-jetbrains-mono
+noto-fonts
+noto-fonts-emoji
+EOF
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Package manifest configured"
+}
+
+configure_boot_system() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring dharmic boot experience..."
+
+    # Plymouth configuration
+    mkdir -p airootfs/etc/plymouth
+    cat > airootfs/etc/plymouth/plymouthd.conf << 'EOF'
+[Daemon]
+Theme=breeze
+ShowDelay=0
+DeviceTimeout=5
+EOF
+
+    # mkinitcpio configuration
+    mkdir -p airootfs/etc/mkinitcpio.conf.d
+    cat > airootfs/etc/mkinitcpio.conf.d/kalki.conf << 'EOF'
+HOOKS=(base udev autodetect modconf block plymouth filesystems keyboard fsck)
+COMPRESSION="zstd"
+EOF
+
+    # UEFI boot configuration
+    mkdir -p efiboot/loader/entries
+    cat > efiboot/loader/entries/01-kalki.conf << 'EOF'
+title Kalki OS - Dharmic Computing
+linux /vmlinuz-linux-zen
+initrd /initramfs-linux-zen.img
+options archisobasedir=arch archisolabel=KALKI_OS quiet splash loglevel=3 plymouth.boot-log=/dev/null
+EOF
+
+    # BIOS boot configuration
+    sed -i 's/TIMEOUT.*/TIMEOUT 0/' syslinux/archiso_sys-linux.cfg
+    sed -i 's/APPEND.*/APPEND archisobasedir=arch archisolabel=KALKI_OS quiet splash/' syslinux/archiso_sys-linux.cfg
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Boot system configured"
+}
+
+configure_users() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring user accounts..."
+
+    # Create kalki user
+    cat > airootfs/etc/passwd << 'EOF'
+root:x:0:0:root:/root:/usr/bin/zsh
+kalki:x:1000:1000:Kalki User:/home/kalki:/usr/bin/zsh
+EOF
+
+    cat > airootfs/etc/shadow << 'EOF'
+root::14871::::::
+kalki::14871::::::
+EOF
+
+    cat > airootfs/etc/group << 'EOF'
+root:x:0:root
+wheel:x:10:kalki
+audio:x:995:kalki
+video:x:986:kalki
+kalki:x:1000:
+EOF
+
+    cat > airootfs/etc/gshadow << 'EOF'
+root:!*::root
+wheel:!*::kalki
+kalki:!*::
+EOF
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "User accounts configured"
+}
+
+configure_desktop() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring Glass Dharma desktop..."
+
+    # SDDM auto-login
+    mkdir -p airootfs/etc/sddm.conf.d
+    cat > airootfs/etc/sddm.conf.d/kalki.conf << 'EOF'
+[Autologin]
+User=kalki
+Session=hyprland
+EOF
+
+    # Hyprland session
+    mkdir -p airootfs/usr/share/wayland-sessions
+    cat > airootfs/usr/share/wayland-sessions/hyprland.desktop << 'EOF'
+[Desktop Entry]
+Name=Hyprland
+Comment=Dynamic tiling Wayland compositor
+Exec=Hyprland
+Type=Application
+EOF
+
+    # Hyprland configuration
+    mkdir -p airootfs/etc/skel/.config/hypr
+    cat > airootfs/etc/skel/.config/hypr/hyprland.conf << 'EOF'
+# Kalki OS Hyprland Configuration
+monitor = ,preferred,auto,1
+
+exec-once = waybar
+exec-once = mako
+
+# Glass Dharma Aesthetics
+general {
+    gaps_in = 8
+    gaps_out = 16
+    border_size = 3
+    col.active_border = rgba(8EC8D3ff) rgba(B4A7D6ff) 45deg
+    col.inactive_border = rgba(2A2A2Aaa)
+    layout = dwindle
+}
+
+decoration {
+    rounding = 12
+    blur {
+        enabled = true
+        size = 8
+        passes = 3
+    }
+    drop_shadow = true
+}
+
+animations {
+    enabled = true
+    bezier = dharmic, 0.25, 0.9, 0.1, 1.02
+    animation = windows, 1, 7, dharmic
+}
+
+# Key bindings
+$mainMod = SUPER
+bind = $mainMod, Return, exec, alacritty
+bind = $mainMod, Q, killactive
+bind = $mainMod, R, exec, wofi --show drun
+EOF
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Desktop environment configured"
+}
+
+setup_ai_components() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Setting up AI integration framework..."
+
+    # Create AI setup script
+    mkdir -p airootfs/usr/local/bin
+    cat > airootfs/usr/local/bin/setup-ai-components.sh << 'EOF'
+#!/bin/bash
+echo "🕉️ Setting up Kalki OS AI components..."
+# AI setup will be completed post-install
+echo "✅ AI framework ready for activation"
+EOF
+    chmod +x airootfs/usr/local/bin/setup-ai-components.sh
+
+    # Create Krix-Term placeholder
+    cat > airootfs/usr/bin/krix-term << 'EOF'
+#!/bin/bash
+echo "🔵 Krix-Term - AI Terminal for Kalki OS"
+echo "🕉️ Welcome to Dharmic Computing"
+echo "AI components will be configured on first boot."
+alacritty
+EOF
+    chmod +x airootfs/usr/bin/krix-term
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "AI framework prepared"
+}
+
+configure_services() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Configuring system services..."
+
+    # Enable essential services
+    mkdir -p airootfs/etc/systemd/system/multi-user.target.wants
+    ln -sf /usr/lib/systemd/system/NetworkManager.service \
+        airootfs/etc/systemd/system/multi-user.target.wants/
+
+    # Enable display manager
+    ln -sf /usr/lib/systemd/system/sddm.service \
+        airootfs/etc/systemd/system/display-manager.service
+
+    # System customization script
+    cat > airootfs/root/customize_airootfs.sh << 'EOF'
+#!/bin/bash
+echo "🕉️ Configuring Kalki OS..."
+echo 'kalki' > /etc/hostname
+echo 'LANG=en_US.UTF-8' > /etc/locale.conf
+plymouth-set-default-theme breeze || true
+chown -R 1000:1000 /home/kalki 2>/dev/null || true
+echo "✅ Kalki OS configuration completed"
+EOF
+    chmod +x airootfs/root/customize_airootfs.sh
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Services configured"
+}
+
+optimize_performance() {
+    print_status "$BLUE" "$KALKI_SYMBOL" "Optimizing system performance..."
+
+    # ZRAM configuration
+    mkdir -p airootfs/etc/systemd
+    cat > airootfs/etc/systemd/zram-generator.conf << 'EOF'
+[zram0]
+zram-size = min(ram * 2, 8192)
+compression-algorithm = zstd
+swap-priority = 100
+EOF
+
+    # Performance tuning
+    mkdir -p airootfs/etc/sysctl.d
+    cat > airootfs/etc/sysctl.d/99-kalki-performance.conf << 'EOF'
+vm.swappiness = 180
+net.core.default_qdisc = fq_codel
+net.ipv4.tcp_congestion_control = bbr
+EOF
+
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "Performance optimizations applied"
+}
+
+build_iso() {
+    print_status "$YELLOW" "$BUILDING_SYMBOL" "Building Kalki OS ISO..."
+    print_status "$CYAN" "$OM_SYMBOL" "This may take 20-60 minutes depending on your system..."
+
+    # Clean previous builds
+    sudo rm -rf work out 2>/dev/null || true
+    mkdir -p work out
+
+    # Start build timer
+    local start_time=$(date +%s)
+
+    # Build with progress indication
+    if sudo mkarchiso -v -w work -o out . 2>&1 | tee build.log; then
+        local end_time=$(date +%s)
+        local build_time=$((end_time - start_time))
+        local minutes=$((build_time / 60))
+        local seconds=$((build_time % 60))
+
+        print_status "$GREEN" "$SUCCESS_SYMBOL" "ISO build completed in ${minutes}m ${seconds}s"
+
+        # Show build results
+        if ls out/kalki-*.iso >/dev/null 2>&1; then
+            local iso_file=$(ls out/kalki-*.iso | head -1)
+            local iso_size=$(du -h "$iso_file" | cut -f1)
+
+            echo
+            print_status "$GREEN" "$SUCCESS_SYMBOL" "Build Results:"
+            echo "  📦 ISO File: $iso_file"
+            echo "  📊 Size: $iso_size"
+            echo "  ⏱️  Build Time: ${minutes}m ${seconds}s"
+
+            if [ "${iso_size%G*}" -lt 4 ] 2>/dev/null; then
+                print_status "$GREEN" "$SUCCESS_SYMBOL" "ISO size is optimal (under 4GB)"
+            else
+                print_status "$YELLOW" "⚠️" "ISO size is large - consider optimization"
+            fi
+        fi
+    else
+        print_status "$RED" "$ERROR_SYMBOL" "ISO build failed - check build.log for details"
+        return 1
+    fi
+}
+
+test_iso() {
+    print_status "$BLUE" "$TESTING_SYMBOL" "Testing Kalki OS in QEMU..."
+
+    local iso_file=$(find out -name "kalki-*.iso" -type f | head -1)
+
+    if [[ ! -f "$iso_file" ]]; then
+        print_status "$RED" "$ERROR_SYMBOL" "No ISO found for testing"
+        return 1
+    fi
+
+    print_status "$CYAN" "$OM_SYMBOL" "Starting virtual machine test..."
+    print_status "$YELLOW" "⚠️" "Press Ctrl+Alt+G to release mouse, Alt+F4 to close"
+
+    # Launch QEMU test
+    qemu-system-x86_64 \
+        -enable-kvm \
+        -cpu host \
+        -m 4G \
+        -smp 2 \
+        -display gtk \
+        -netdev user,id=net0 \
+        -device virtio-net,netdev=net0 \
+        -cdrom "$iso_file" \
+        -name "Kalki OS Test" \
+        &> /dev/null &
+
+    local qemu_pid=$!
+    print_status "$GREEN" "$SUCCESS_SYMBOL" "QEMU started (PID: $qemu_pid)"
+
+    echo "Test the following in the VM:"
+    echo "  ✓ Boot process with Plymouth animation"
+    echo "  ✓ Auto-login to Hyprland desktop"
+    echo "  ✓ Glass Dharma UI theme"
+    echo "  ✓ Network connectivity"
+    echo "  ✓ Terminal and basic applications"
+}
+
+show_completion() {
+    echo
+    print_status "$PURPLE" "$OM_SYMBOL" "Kalki OS build process completed!"
+    echo
+    echo "🎉 Your dharmic computing platform is ready!"
+    echo
+    echo "Next steps:"
+    echo "  1. Test the ISO in virtual machine"
+    echo "  2. Create bootable USB with: dd if=out/kalki-*.iso of=/dev/sdX bs=4M"
+    echo "  3. Implement 12 Avatar system"
+    echo "  4. Add Krix-Term AI capabilities"
+    echo "  5. Deploy to target hardware"
+    echo
+    print_status "$PURPLE" "$OM_SYMBOL" "Om Kalki Namah - The digital dharma wheel begins to turn."
+}
+
+# Main execution flow
+main() {
+    print_header
+
+    check_dependencies
+    create_project_structure
+    configure_iso_profile
+    configure_packages
+    configure_boot_system
+    configure_users
+    configure_desktop
+    setup_ai_components
+    configure_services
+    optimize_performance
+
+    echo
+    print_status "$YELLOW" "$KALKI_SYMBOL" "Configuration complete. Ready to build ISO."
+    read -p "Proceed with ISO build? (y/N): " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        build_iso
+
+        echo
+        read -p "Test the ISO in QEMU? (y/N): " -n 1 -r
+        echo
+
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            test_iso
+        fi
+
+        show_completion
+    else
+        print_status "$YELLOW" "⚠️" "Build cancelled. Configuration saved in ~/kalki-os-project/"
+    fi
+}
+
+# Error handling
+trap 'print_status "$RED" "$ERROR_SYMBOL" "Build interrupted. Check ~/kalki-os-project/ for partial progress."' INT TERM
+
+# Run main function
+main "$@"

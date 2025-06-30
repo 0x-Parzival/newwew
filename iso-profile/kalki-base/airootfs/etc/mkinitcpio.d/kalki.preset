@@ -1,0 +1,58 @@
+# mkinitcpio preset file for Kalki OS
+
+# Moved from deprecated location
+# This fixes mkinitcpio configuration errors by placing the preset in the correct directory
+# Move the old config file if it exists
+if [ -f "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/etc/mkinitcpio.conf.d/kalki.conf" ]; then
+    mv "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/etc/mkinitcpio.conf.d/kalki.conf" "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/etc/mkinitcpio.d/kalki.preset"
+fi
+
+# Default configuration
+PRESETS=('default' 'fallback')
+
+# Default preset - used for normal boot
+default_image="/boot/initramfs-linux.img"
+default_uki="/efi/EFI/Linux/arch-linux.efi"
+default_options="--cmdline /proc/cmdline --splash /usr/share/systemd/bootctl/splash-arch.bmp"
+
+# Fallback preset - includes all modules
+fallback_image="/boot/initramfs-linux-fallback.img"
+fallback_uki="/efi/EFI/Linux/arch-linux-fallback.efi"
+fallback_options="-S autodetect --cmdline /proc/cmdline"
+
+# Common options for all presets
+COMPRESSION="zstd"
+# Use simpler zstd options compatible with current version
+COMPRESSION_OPTIONS=(
+    "-3"
+    "--fast=1"
+)
+
+# Build optimization
+MODULES_DECOMPRESS="yes"
+BUILD_TIMEOUT=10800  # 3 hours
+
+# Microcode and firmware
+MICROCODE="yes"
+
+# Modules for early KMS
+MODULES=(i915 amdgpu radeon nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+# Firmware files
+FILES=(/usr/lib/firmware/amdgpu/* /usr/lib/firmware/i915/* /usr/lib/firmware/nvidia/*)
+
+# Hooks with proper Plymouth integration
+HOOKS=(base udev plymouth autodetect modconf block filesystems keyboard fsck)
+
+# Plymouth configuration
+PLYMOUTH="yes"
+PLYMOUTH_THEME="kalki-dharma"
+
+# Cache settings
+CACHE_DIR="/var/cache/mkinitcpio"
+CACHE_PRESET="default"
+
+# Parallel compression
+COMPRESSOR_OPTIONS=(
+    "--threads=0"
+)

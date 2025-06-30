@@ -1,0 +1,12 @@
+{
+    "id": "04-narasimha",
+    "name": "Narasimha",
+    "title": "The Protector",
+    "description": "Placeholder for Narasimha avatar - The Protector",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

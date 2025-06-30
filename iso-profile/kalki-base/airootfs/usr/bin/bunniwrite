@@ -1,0 +1,50 @@
+#!/bin/bash
+"""
+BunniWrite Launcher - Dharmic Writing Studio
+"""
+
+# Add Python to path if needed
+export PATH="/usr/bin:$PATH"
+
+# Set up environment
+export PYTHONPATH="/opt/kalki/apps/bunniwrite:/opt/kalki:$PYTHONPATH"
+
+# Check for required dependencies
+check_dependencies() {
+    local missing=()
+    
+    # Check for Python 3
+    if ! command -v python3 &> /dev/null; then
+        echo "Error: Python 3 is required but not installed."
+        missing+=("python3")
+    fi
+    
+    # Check for Tkinter
+    if ! python3 -c "import tkinter" &> /dev/null; then
+        echo "Error: Tkinter is required but not installed."
+        missing+=("python3-tk")
+    fi
+    
+    if [ ${#missing[@]} -ne 0 ]; then
+        echo "Please install missing dependencies with:"
+        echo "  sudo pacman -S ${missing[*]}"
+        exit 1
+    fi
+}
+
+# Main execution
+main() {
+    # Check for dependencies
+    check_dependencies
+    
+    # Run BunniWrite
+    cd "/opt/kalki/apps/bunniwrite/src" || {
+        echo "Error: Could not find BunniWrite installation"
+        exit 1
+    }
+    
+    exec python3 bunniwrite.py "$@"
+}
+
+# Execute main function
+main "$@"

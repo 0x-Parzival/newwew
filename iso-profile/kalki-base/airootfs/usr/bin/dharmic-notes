@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""
+Dharmic Notes - A mindful note-taking application
+"""
+
+import sys
+from pathlib import Path
+
+# Add dharmic_apps to path
+sys.path.append('/opt/kalki/dharmic_apps')
+
+# Import the application
+try:
+    from examples.dharmic_notes import DharmicNotes
+except ImportError as e:
+    print(f"Error importing Dharmic Notes: {e}")
+    print("Please ensure the dharmic_apps package is installed in /opt/kalki/")
+    sys.exit(1)
+
+def main():
+    """Main entry point for the application"""
+    try:
+        app = DharmicNotes()
+        app.run()
+    except KeyboardInterrupt:
+        print("\n🕉️ Thank you for using Dharmic Notes. May your thoughts be clear and mindful.")
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        if 'app' in locals():
+            app.cleanup()
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,12 @@
+{
+    "id": "06-parashurama",
+    "name": "Parashurama",
+    "title": "The Warrior",
+    "description": "Placeholder for Parashurama avatar - The Warrior",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

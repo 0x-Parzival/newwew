@@ -1,0 +1,45 @@
+# Core system
+base
+linux-zen
+linux-firmware
+amd-ucode
+intel-ucode
+
+# Boot and install
+efibootmgr
+grub
+os-prober
+arch-install-scripts
+
+# Hyprland minimal
+hyprland
+waybar
+kitty
+wofi
+swaybg
+swaylock-effects
+wl-clipboard
+grim
+slurp
+
+# Network
+networkmanager
+wireless_tools
+wpa_supplicant
+
+# Fonts and themes
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-emoji
+
+# AI Assistant (minimal)
+python
+python-pip
+python-psutil
+
+# Utilities
+git
+nano
+curl
+wget
+unzip

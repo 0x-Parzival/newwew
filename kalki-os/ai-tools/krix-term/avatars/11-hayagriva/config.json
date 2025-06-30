@@ -1,0 +1,12 @@
+{
+    "id": "11-hayagriva",
+    "name": "Hayagriva",
+    "title": "The Knowledge Keeper",
+    "description": "Placeholder for Hayagriva avatar - The Knowledge Keeper",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

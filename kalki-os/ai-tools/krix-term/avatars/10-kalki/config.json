@@ -1,0 +1,12 @@
+{
+    "id": "10-kalki",
+    "name": "Kalki",
+    "title": "The Future",
+    "description": "Placeholder for Kalki avatar - The Future",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

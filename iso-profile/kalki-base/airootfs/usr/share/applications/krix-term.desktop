@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Krix-Term
+Comment=Avatar-Powered Terminal Interface for Kalki OS
+Exec=krix-term
+Icon=utilities-terminal
+Terminal=true
+Categories=System;Utility;TerminalEmulator;
+Keywords=terminal;ai;avatar;chat;

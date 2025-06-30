@@ -1,0 +1,13 @@
+[Unit]
+Description=Kalki Installation Assistant
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/kalki/ai-assistant/kia.py --install
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

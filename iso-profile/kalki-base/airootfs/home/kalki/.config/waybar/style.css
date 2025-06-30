@@ -1,0 +1,157 @@
+/* Glass Dharma UI - Waybar Style */
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", "Font Awesome 5 Free";
+    font-size: 12px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(26, 5, 37, 0.8);
+    color: #f8f8f2;
+    transition-duration: .5s;
+    border-radius: 12px;
+    margin: 8px;
+    padding: 0 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(189, 147, 249, 0.3);
+}
+
+#workspaces {
+    background: transparent;
+    padding: 0 5px;
+    margin: 0 4px;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    color: #6272a4;
+    background: transparent;
+    border-radius: 6px;
+    margin: 5px 2px;
+    transition: all 0.3s ease;
+}
+
+#workspaces button:hover {
+    background: rgba(98, 114, 164, 0.2);
+    color: #f8f8f2;
+}
+
+#workspaces button.focused {
+    color: #bd93f9;
+    background: rgba(189, 147, 249, 0.2);
+}
+
+#workspaces button.urgent {
+    color: #ff5555;
+}
+
+#window {
+    margin: 0 16px;
+    color: #f8f8f2;
+    font-weight: bold;
+}
+
+#clock, #battery, #cpu, #memory, #temperature, #network, #pulseaudio, #tray, #custom-launcher {
+    padding: 0 10px;
+    margin: 5px 2px;
+    border-radius: 6px;
+    background: rgba(68, 71, 90, 0.3);
+    transition: all 0.3s ease;
+}
+
+#clock {
+    color: #f1fa8c;
+    font-weight: bold;
+    background: rgba(241, 250, 140, 0.1);
+}
+
+#battery {
+    color: #50fa7b;
+}
+
+#battery.charging {
+    color: #50fa7b;
+}
+
+#battery.warning:not(.charging) {
+    color: #ffb86c;
+}
+
+#battery.critical:not(.charging) {
+    color: #ff5555;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+#cpu {
+    color: #8be9fd;
+}
+
+#memory {
+    color: #bd93f9;
+}
+
+#temperature {
+    color: #ff79c6;
+}
+
+#temperature.critical {
+    color: #ff5555;
+}
+
+#network {
+    color: #f1fa8c;
+}
+
+#network.disconnected {
+    color: #ff5555;
+}
+
+#pulseaudio {
+    color: #bd93f9;
+}
+
+#pulseaudio.muted {
+    color: #ff5555;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: #ff5555;
+}
+
+#custom-launcher {
+    color: #bd93f9;
+    font-size: 16px;
+    padding: 0 12px 0 16px;
+}
+
+/* Animation for low battery */
+@keyframes blink {
+    to {
+        background-color: #ff5555;
+        color: #282a36;
+    }
+}
+
+/* Tooltip styling */
+tooltip {
+    background: rgba(40, 42, 54, 0.95);
+    border: 1px solid #bd93f9;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+tooltip label {
+    color: #f8f8f2;
+}

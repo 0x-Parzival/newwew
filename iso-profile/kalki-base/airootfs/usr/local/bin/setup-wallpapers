@@ -1,0 +1,82 @@
+#!/bin/bash
+# Setup script for Kalki OS wallpapers
+
+set -euo pipefail
+
+# Configuration
+WALLPAPER_DIR="/opt/kalki/wallpapers"
+THEMES=("dawn" "day" "dusk" "night")
+DEFAULT_WALLPAPER="$WALLPAPER_DIR/dharmic-cosmos-day.jpg"
+
+# Create directories
+create_directories() {
+    echo "Creating wallpaper directories..."
+    for theme in "${THEMES[@]}"; do
+        mkdir -p "$WALLPAPER_DIR/$theme"
+    done
+}
+
+# Set default permissions
+set_permissions() {
+    echo "Setting permissions..."
+    chmod -R 755 "$WALLPAPER_DIR"
+    chown -R root:root "$WALLPAPER_DIR"
+}
+
+# Create default wallpaper (can be replaced with actual images later)
+create_default_wallpapers() {
+    echo "Creating default wallpapers..."
+    for theme in "${THEMES[@]}"; do
+        local color=""
+        case "$theme" in
+            "dawn") color="#FFA07A" ;;  # Light Salmon
+            "day") color="#87CEEB" ;;    # Sky Blue
+            "dusk") color="#9370DB" ;;   # Medium Purple
+            "night") color="#191970" ;;  # Midnight Blue
+        esac
+        
+        convert -size 1920x1080 xc:"$color" \
+                -gravity center \
+                -pointsize 72 \
+                -fill white \
+                -annotate 0 "Kalki OS\n$theme" \
+                "$WALLPAPER_DIR/dharmic-cosmos-$theme.jpg"
+    done
+}
+
+# Enable systemd services
+enable_services() {
+    echo "Enabling wallpaper services..."
+    systemctl --user enable --now kalki-wallpaper.timer
+    systemctl --user start kalki-wallpaper.service
+}
+
+# Main function
+main() {
+    echo "Setting up Kalki OS wallpaper system..."
+    
+    # Create necessary directories
+    create_directories
+    
+    # Create default wallpapers
+    create_default_wallpapers
+    
+    # Set permissions
+    set_permissions
+    
+    # Initialize the wallpaper system
+    /usr/local/bin/kalki-wallpaper init
+    
+    # Enable services for the current user
+    if [ -n "$SUDO_USER" ]; then
+        sudo -u "$SUDO_USER" systemctl --user enable --now kalki-wallpaper.timer
+        sudo -u "$SUDO_USER" systemctl --user start kalki-wallpaper.service
+    else
+        echo "Please run this script with sudo to enable user services"
+    fi
+    
+    echo "Wallpaper setup complete!"
+}
+
+# Run main function
+main "$@"

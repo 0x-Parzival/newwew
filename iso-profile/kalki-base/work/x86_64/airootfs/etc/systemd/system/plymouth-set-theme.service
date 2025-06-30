@@ -1,0 +1,11 @@
+[Unit]
+Description=Set Plymouth Theme
+After=plymouth-quit-wait.service
+Before=systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/plymouth-set-default-theme -R kalki-dharma
+
+[Install]
+WantedBy=multi-user.target

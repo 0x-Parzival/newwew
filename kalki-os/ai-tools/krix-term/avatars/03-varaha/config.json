@@ -1,0 +1,12 @@
+{
+    "id": "03-varaha",
+    "name": "Varaha",
+    "title": "The Rescuer",
+    "description": "Placeholder for Varaha avatar - The Rescuer",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Kalki OS Dynamic Wallpaper Service
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/kalki-wallpaper auto
+RemainAfterExit=no
+
+[Install]
+WantedBy=graphical-session.target
