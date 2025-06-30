@@ -1,0 +1,12 @@
+[Unit]
+Description=OMNet Root Agent for Autonomous AI OS Editing
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bash /usr/share/omnet-shell/omnet-root-agent.sh
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target 

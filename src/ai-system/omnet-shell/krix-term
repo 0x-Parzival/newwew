@@ -1,0 +1,121 @@
+#!/bin/bash
+# OMNet-Shell (Krix-Term) - AI-Aware Terminal Agent for Kalki OS
+# Inspired by SmolagentS
+
+CONFIG_DIR="$HOME/.config/omnet-shell"
+LOG_FILE="$CONFIG_DIR/omnet-shell.log"
+AI_STATUS_FILE="$CONFIG_DIR/ai-status.json"
+THEME_DIR="$CONFIG_DIR/themes"
+AVATAR_DIR="$CONFIG_DIR/avatars"
+
+# Create necessary directories
+mkdir -p "$CONFIG_DIR" "$THEME_DIR" "$AVATAR_DIR"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+check_ai_status() {
+    if [ -f "$AI_STATUS_FILE" ]; then
+        local status=$(jq -r '.status' "$AI_STATUS_FILE" 2>/dev/null || echo "not_configured")
+        echo "$status"
+    else
+        echo '{"status":"not_configured","message":"AI components not yet configured"}' > "$AI_STATUS_FILE"
+        echo "not_configured"
+    fi
+}
+
+show_welcome() {
+    local status=$(check_ai_status)
+    clear
+    echo -e "\033[1;35m╔══════════════════════════════════════════════════╗"
+    echo -e "║           OMNet-Shell - Kalki OS                ║"
+    echo -e "╚══════════════════════════════════════════════════╝\033[0m"
+    echo
+    case "$status" in
+        "not_configured")
+            echo -e "  \033[1;33mAI Components Not Configured\033[0m"
+            echo "  The AI features of OMNet-Shell are not yet set up."
+            echo "  Please run the AI setup after installation:"
+            echo "  "
+            echo -e "  \033[1;36m$ ai-setup\033[0m"
+            ;;
+        "installing")
+            echo -e "  \033[1;36mAI Components Installing...\033[0m"
+            echo "  OMNet-Shell is setting up AI capabilities."
+            echo "  This may take some time. Please wait..."
+            ;;
+        "ready")
+            echo -e "  \033[1;32mAI Components Ready!\033[0m"
+            echo "  OMNet-Shell AI features are available."
+            echo "  Type 'omnet-ai --help' to get started."
+            ;;
+        "error")
+            local error_msg=$(jq -r '.message' "$AI_STATUS_FILE" 2>/dev/null || echo "Unknown error")
+            echo -e "  \033[1;31mAI Setup Error\033[0m"
+            echo "  $error_msg"
+            echo "  Please run 'ai-setup --retry' to try again."
+            ;;
+        *)
+            echo -e "  \033[1;33mAI Status Unknown\033[0m"
+            echo "  The AI component status could not be determined."
+            ;;
+    esac
+    echo
+    echo -e "  \033[1mPress any key to continue to the terminal...\033[0m"
+    read -n 1 -s
+}
+
+# Function to send privileged command to OMNet Root Agent
+send_root_command() {
+    local cmd="$1"
+    if grep -qi 'arch' /etc/os-release; then
+        echo "$cmd" | sudo tee /run/omnet-root-agent.cmd
+    else
+        echo "[ERROR] Not running on Arch Linux/Archiso. Command not sent."
+    fi
+}
+
+choose_terminal() {
+    if command -v kitty &>/dev/null; then
+        echo "kitty"
+    elif command -v alacritty &>/dev/null; then
+        echo "alacritty"
+    elif command -v foot &>/dev/null; then
+        echo "foot"
+    else
+        echo "xterm"
+    fi
+}
+
+main() {
+    if [ "$1" != "--quiet" ]; then
+        show_welcome
+    fi
+    export SHELL="/bin/zsh"
+    export STARSHIP_CONFIG="$CONFIG_DIR/starship.toml"
+    export KITTY_CONFIG_DIRECTORY="$CONFIG_DIR/kitty"
+    export FONT_FAMILY="JetBrainsMono Nerd Font, Iosevka, Victor Mono"
+    export OMNET_AVATAR_DIR="$AVATAR_DIR"
+    export OMNET_THEME_DIR="$THEME_DIR"
+    export OMNET_COLOR_SCHEME="synthwave-vedic"
+    export OMNET_TRANSPARENCY="0.20"
+    export OMNET_CURSOR_STYLE="beam"
+    TERMINAL=$(choose_terminal)
+    case "$TERMINAL" in
+        "kitty")
+            exec kitty --single-instance -d "$HOME" -o allow_remote_control=yes -o background_opacity=0.80 -o font_family="JetBrainsMono Nerd Font" zsh -l
+            ;;
+        "alacritty")
+            exec alacritty --config-file "$CONFIG_DIR/alacritty.yml" -e zsh -l
+            ;;
+        "foot")
+            exec foot -F "JetBrainsMono Nerd Font" -a 0.80 zsh -l
+            ;;
+        *)
+            exec xterm -fa 'Monospace' -fs 12 -e zsh -l
+            ;;
+    esac
+}
+
+main "$@" 

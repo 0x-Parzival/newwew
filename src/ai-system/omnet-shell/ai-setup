@@ -1,0 +1,17 @@
+#!/bin/bash
+# ai-setup: Initialize the avatar system for Omnet Shell
+
+AVATAR_DIR="$(dirname "$0")/avatars"
+
+if [ ! -d "$AVATAR_DIR" ]; then
+  echo "[ai-setup] Avatar directory not found: $AVATAR_DIR"
+  exit 1
+fi
+
+for avatar in "$AVATAR_DIR"/*; do
+  if [ -d "$avatar" ] && [ -f "$avatar/config.json" ]; then
+    echo "[ai-setup] Found avatar: $(basename "$avatar")"
+  fi
+done
+
+echo "[ai-setup] Avatar system initialized." 

@@ -16,6 +16,35 @@ PROFILE="kalki-ultimate"
 WORK_DIR="./work"
 OUT_DIR="./out"
 
+# Required directories for overlays
+REQUIRED_DIRS=(
+  "ai-tools"
+  "hyprland"
+  "avatar-system"
+  "apps"
+  "security-layer"
+  "benchmarking"
+  "iso-profile/${PROFILE}"
+)
+
+# Required files in profile
+REQUIRED_PROFILE_FILES=(
+  "iso-profile/${PROFILE}/packages.x86_64"
+)
+
+# Feature flags (default: all enabled)
+ENABLE_AI=true
+ENABLE_AVATARS=true
+ENABLE_SECURITY=true
+ENABLE_DHARMIC_TOOLS=true
+ENABLE_TESTING=false
+VALIDATE=true
+CLEAN=false
+RESUME=false
+VERBOSE=false
+KEEP_WORKDIR=false
+BUILD_TYPE="full"
+
 # Logging functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
@@ -30,73 +59,178 @@ warn() {
     echo -e "${YELLOW}[WARNING] $1${NC}" >&2
 }
 
+# Automated dependency installation
+install_deps() {
+    local deps=("mkarchiso" "pacman" "git" "rsync" "sha256sum" "sbsigntool" "e2fsprogs" "cryptsetup")
+    local missing=()
+    log "Checking and installing build dependencies..."
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &>/dev/null; then
+            missing+=("$dep")
+        fi
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log "Installing missing dependencies: ${missing[*]}"
+        sudo pacman -Sy --noconfirm --needed "${missing[@]}"
+    fi
+}
+
+# Validate required directories and files
+validate_structure() {
+    local all_ok=1
+    for dir in "${REQUIRED_DIRS[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            warn "Required directory missing: $dir. Creating it (empty)."
+            mkdir -p "$dir"
+            all_ok=0
+        fi
+    done
+    for file in "${REQUIRED_PROFILE_FILES[@]}"; do
+        if [[ ! -f "$file" ]]; then
+            warn "Required file missing: $file. Creating empty placeholder."
+            touch "$file"
+            all_ok=0
+        fi
+    done
+    if [[ $all_ok -eq 0 ]]; then
+        warn "Some required directories/files were missing and have been created as empty placeholders. Please populate them as needed."
+    fi
+}
+
 # Cleanup function
 cleanup() {
     log "Cleaning up..."
     sudo rm -rf "$WORK_DIR"
 }
 
-# Check dependencies
-check_deps() {
-    local deps=("mkarchiso" "pacman" "git" "rsync" "sha256sum" "sbsigntool" "e2fsprogs" "cryptsetup")
-    local missing=()
-    
-    log "Checking build dependencies..."
-    
-    for dep in "${deps[@]}"; do
-        if ! command -v "$dep" &>/dev/null; then
-            missing+=("$dep")
-        fi
-    done
-    
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        error "Missing dependencies: ${missing[*]}. Please install them first."
-    fi
+# Check dependencies (now handled by install_deps)
+check_deps() { :; }
+
+# Show help function
+show_help() {
+    echo "Kalki OS Ultimate Build Script"
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  --type TYPE          Build type: full, minimal, custom (default: full)"
+    echo "  --clean              Clean build directory before starting"
+    echo "  --resume             Resume previous build"
+    echo "  --no-validate        Skip validation steps"
+    echo "  --no-ai              Disable AI components"
+    echo "  --no-avatars         Disable avatar system"
+    echo "  --no-security        Disable security hardening"
+    echo "  --no-dharmic-tools   Disable dharmic tools/apps"
+    echo "  --enable-testing     Run post-build tests"
+    echo "  --keep-workdir       Keep work directory after build"
+    echo "  -v, --verbose        Enable verbose output"
+    echo "  -h, --help           Show this help message"
+    exit 0
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --type)
+            BUILD_TYPE="$2"
+            shift 2
+            ;;
+        --clean)
+            CLEAN=true
+            shift
+            ;;
+        --resume)
+            RESUME=true
+            shift
+            ;;
+        --no-validate)
+            VALIDATE=false
+            shift
+            ;;
+        --no-ai)
+            ENABLE_AI=false
+            shift
+            ;;
+        --no-avatars)
+            ENABLE_AVATARS=false
+            shift
+            ;;
+        --no-security)
+            ENABLE_SECURITY=false
+            shift
+            ;;
+        --no-dharmic-tools)
+            ENABLE_DHARMIC_TOOLS=false
+            shift
+            ;;
+        --enable-testing)
+            ENABLE_TESTING=true
+            shift
+            ;;
+        --keep-workdir)
+            KEEP_WORKDIR=true
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            error "Unknown option: $1"
+            ;;
+    esac
+done
+
+# Print build summary
+show_build_summary() {
+    echo -e "\n${GREEN}=== Build Summary ===${NC}"
+    echo -e "Build Type:       $BUILD_TYPE"
+    echo -e "AI Integration:   $([[ $ENABLE_AI == "true" ]] && echo "Enabled" || echo "Disabled")"
+    echo -e "Avatar System:    $([[ $ENABLE_AVATARS == "true" ]] && echo "Enabled" || echo "Disabled")"
+    echo -e "Security:         $([[ $ENABLE_SECURITY == "true" ]] && echo "Enabled" || echo "Disabled")"
+    echo -e "Dharmic Tools:    $([[ $ENABLE_DHARMIC_TOOLS == "true" ]] && echo "Enabled" || echo "Disabled")"
+    echo -e "Validation:       $([[ $VALIDATE == "true" ]] && echo "Enabled" || echo "Disabled")"
+    echo -e "Work Directory:   $WORK_DIR"
+    echo -e "Output Directory: $OUT_DIR"
+    echo -e "${GREEN}====================${NC}\n"
 }
 
 # Prepare overlays
 prepare_overlays() {
     log "Preparing phase overlays..."
-    
-    # Create overlay directories
     local overlay_dir="iso-profile/${PROFILE}/overlay.d"
-    
-    # 01-ai: AI components (Phase 2-4)
-    if [ -d "ai-tools" ]; then
+    # 01-ai: AI components
+    if [[ "$ENABLE_AI" == "true" && -d "ai-tools" ]]; then
         log "  - Adding AI tools..."
         mkdir -p "${overlay_dir}/01-ai/opt/kalki/ai-tools"
         cp -r ai-tools/* "${overlay_dir}/01-ai/opt/kalki/ai-tools/"
     fi
-    
-    # 02-ui: UI components (Phase 3-4)
+    # 02-ui: UI components
     if [ -d "hyprland" ]; then
         log "  - Adding Hyprland configuration..."
         mkdir -p "${overlay_dir}/02-ui/etc/skel/.config/hypr"
         cp -r hypr/* "${overlay_dir}/02-ui/etc/skel/.config/hypr/"
     fi
-    
-    # 03-avatars: Avatar system (Phase 5)
-    if [ -d "avatar-system" ]; then
+    # 03-avatars: Avatar system
+    if [[ "$ENABLE_AVATARS" == "true" && -d "avatar-system" ]]; then
         log "  - Adding Avatar system..."
         mkdir -p "${overlay_dir}/03-avatars/opt/kalki/avatars"
         cp -r avatar-system/* "${overlay_dir}/03-avatars/opt/kalki/avatars/"
     fi
-    
-    # 04-apps: Dharmic applications (Phase 6)
-    if [ -d "apps" ]; then
+    # 04-apps: Dharmic applications
+    if [[ "$ENABLE_DHARMIC_TOOLS" == "true" && -d "apps" ]]; then
         log "  - Adding Dharmic applications..."
         mkdir -p "${overlay_dir}/04-apps/opt/kalki/apps"
         cp -r apps/* "${overlay_dir}/04-apps/opt/kalki/apps/"
     fi
-    
-    # 05-security: Security layer (Phase 7)
-    if [ -d "security-layer" ]; then
+    # 05-security: Security layer
+    if [[ "$ENABLE_SECURITY" == "true" && -d "security-layer" ]]; then
         log "  - Adding security configurations..."
         mkdir -p "${overlay_dir}/05-security/etc"
         cp -r security-layer/etc/* "${overlay_dir}/05-security/etc/"
     fi
-    
-    # 06-bench: Benchmarking tools (Phase 8)
+    # 06-bench: Benchmarking tools
     if [ -d "benchmarking" ]; then
         log "  - Adding benchmarking tools..."
         mkdir -p "${overlay_dir}/06-bench/opt/kalki/bench"
@@ -196,8 +330,11 @@ main() {
         error "Please run this script as root (use sudo)"
     fi
     
-    # Check dependencies
-    check_deps
+    # Automated dependency installation
+    install_deps
+    
+    # Validate required structure
+    validate_structure
     
     # Prepare overlays
     prepare_overlays
@@ -212,10 +349,7 @@ main() {
     build_iso
     
     log "Build process completed successfully!"
-    echo -e "\n${GREEN}=== Build Summary ===${NC}"
-    echo -e "ISO Location: ${OUT_DIR}/$(ls -1t "${OUT_DIR}"/*.iso 2>/dev/null | head -n 1 | xargs basename 2>/dev/null)"
-    echo -e "Checksum:     ${OUT_DIR}/$(ls -1t "${OUT_DIR}"/*.sha256 2>/dev/null | head -n 1 | xargs basename 2>/dev/null)"
-    echo -e "${GREEN}====================${NC}\n"
+    show_build_summary
 }
 
 # Run main function

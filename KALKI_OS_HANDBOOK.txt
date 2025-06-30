@@ -1,0 +1,341 @@
+============================
+KALKI OS HANDBOOK
+============================
+
+Table of Contents
+-----------------
+1. Introduction
+2. Vision & Philosophy
+3. Key Features
+4. System Architecture
+5. Build & Release Process
+6. User Experience
+7. Developer Guide
+8. Security & Privacy
+9. AI & Avatar System
+10. Roadmap & Future
+11. Contact & Contribution
+12. Technical Deep Dives & Diagrams
+13. More Technical Deep Dives & Reference
+
+----------------------------------------
+1. Introduction
+----------------------------------------
+Kalki OS is a next-generation, AI-powered Linux distribution based on Arch Linux. It is designed for speed, modularity, security, and a beautiful, automated user experience. Kalki OS features a unique avatar-driven system, strong privacy, and a modern, glassy UI.
+
+----------------------------------------
+2. Vision & Philosophy
+----------------------------------------
+- Empower users with proactive, context-aware AI assistance.
+- Blend dharmic (mindful, ethical) computing with cutting-edge technology.
+- Make advanced AI and automation accessible to everyone.
+- Ensure privacy, security, and user control at every level.
+
+----------------------------------------
+3. Key Features
+----------------------------------------
+- Modular, fast, and error-free Arch Linux base.
+- 12 custom AI avatars, each with a unique role and LLM backend.
+- Automated first-boot experience with cinematic intro and avatar selection.
+- SmolagentS-style terminal and GUI chat agent (Krix) for natural language automation.
+- Zsh with Starship prompt, JetBrains Mono Nerd Font, synthwave+vedic color scheme.
+- Modern, glassy UI with Hyprland and Waybar.
+- Rollback/snapshot support for safe AI actions.
+- Ventoy support for easy multi-boot USB creation.
+- Live code updates in VM via shared folders.
+- Desktop context daemon and avatar recommender for proactive help.
+- Web-accessible VM demo (Oracle Cloud + noVNC ready).
+- Automated build, validation, and release scripts.
+
+----------------------------------------
+4. System Architecture
+----------------------------------------
+- **Backend:**
+  - Arch Linux core with modular overlays for AI, UI, avatars, security, and apps.
+  - AI system (Python) with LLM integration (Ollama, CodeLlama, FinGPT, etc.).
+  - Avatar engine: Each avatar has its own config, scripts, and LLM assignment.
+  - Security modules: Kernel configs, memory encryption, and monitoring.
+  - Dharmic apps: BunniWrite, DesignDeva, RoostyTime, AppMantra.
+- **Frontend:**
+  - Hyprland compositor for a modern, glassy desktop.
+  - Waybar for status and notifications.
+  - Terminal agent (Krix) and GUI chat for natural language control.
+  - First-boot wizard and OOBE scripts for seamless onboarding.
+
+----------------------------------------
+5. Build & Release Process
+----------------------------------------
+- Automated scripts for pre-build setup, ISO build, validation, and release.
+- Centralized package lists for each profile (ultimate, minimal, etc.).
+- Branding and first-run scripts for a polished OOBE.
+- Repo/release automation for professional development.
+- VM test scripts for automated QA.
+
+----------------------------------------
+6. User Experience
+----------------------------------------
+- Cinematic first boot with avatar selection and guided setup.
+- Proactive AI notifications and recommendations.
+- Natural language chat agent for all system tasks.
+- Beautiful, customizable desktop with glassy effects.
+- Fast, reliable, and secure by default.
+
+----------------------------------------
+7. Developer Guide
+----------------------------------------
+- Modular codebase: All features are in logical directories (src/, scripts/, apps/, etc.).
+- Build scripts support advanced flags for custom builds.
+- Easy to add new avatars, apps, or overlays.
+- Continuous improvement/metrics module for tracking KPIs.
+- Contribution guidelines in CONTRIBUTING.md.
+
+----------------------------------------
+8. Security & Privacy
+----------------------------------------
+- Kernel-level security configs and memory encryption modules.
+- Secure boot, encrypted storage, and privacy-first defaults.
+- Automated validation scripts for avatar tools and system integrity.
+- Rollback/snapshot support for all AI actions.
+
+----------------------------------------
+9. AI & Avatar System
+----------------------------------------
+- 12 custom avatars (Mushak, Nandi, Shera, Bunni, Kalkian, Nag, Chetak, GOAT, Monki, Roosty, Chew-Chew, Chill Pig).
+- Each avatar has a unique config, LLM backend, and cinematic intro.
+- Krix terminal/GUI agent for natural language automation.
+- Avatar recommender and desktop context daemon for proactive help.
+- Modular, easy to extend with new LLMs or personas.
+
+----------------------------------------
+10. Roadmap & Future
+----------------------------------------
+- See ROADMAP.md for detailed version timeline and feature status.
+- Planned features: Dharma App Store, blockchain identity, mobile companion, quantum cryptography, neural coprocessor, bio-interfaces.
+- Quarterly updates and transparent development process.
+
+----------------------------------------
+11. Contact & Contribution
+----------------------------------------
+- See CONTRIBUTING.md for how to get involved.
+- Feature requests and feedback welcome via GitHub Issues.
+- For partnership or investment inquiries, contact the maintainers via the project repository.
+
+----------------------------------------
+12. Technical Deep Dives & Diagrams
+----------------------------------------
+
+A. 12-Avatar AI System Architecture
+-----------------------------------
+Mermaid Diagram:
+
+    graph TD
+      User["User"] -->|"Selects Avatar"| AvatarSelector
+      AvatarSelector -->|"Loads Config"| AvatarEngine
+      AvatarEngine -->|"Assigns LLM"| LLMBackend
+      LLMBackend -->|"Ollama, CodeLlama, FinGPT, etc."| AIModel
+      AvatarEngine -->|"Personality, Scripts"| AvatarPersona
+      AvatarPersona -->|"Handles Task"| TaskManager
+      TaskManager -->|"Executes System/AI Task"| System
+      System -->|"Returns Result"| TaskManager
+      TaskManager -->|"Formats Response"| AvatarPersona
+      AvatarPersona -->|"Responds to User"| User
+
+- Each avatar has its own config, scripts, and LLM assignment.
+- The Avatar Engine loads the selected avatar, assigns the best LLM, and manages personality and task flow.
+- LLMs are modular and can be swapped/upgraded.
+
+B. Build Pipeline Flow
+----------------------
+Mermaid Diagram:
+
+    graph TD
+      Dev["Developer"] -->|"Runs Pre-Build"| PreBuild["pre-build-setup.sh"]
+      PreBuild -->|"Installs Deps"| BuildScript["build-kalki-ultimate.sh"]
+      BuildScript -->|"Prepares Overlays"| OverlayPrep
+      OverlayPrep -->|"Flattens to airootfs"| Airootfs
+      Airootfs -->|"mkarchiso"| ISOBuilder
+      ISOBuilder -->|"ISO Output"| OutDir["out/"]
+      OutDir -->|"Test in VM"| VMTest["test-kalki-vm.sh"]
+      OutDir -->|"Release"| ReleaseScript["release-kalki.sh"]
+
+- All build steps are automated and modular.
+- Overlays allow for easy addition/removal of features.
+
+C. Security Module Integration
+-----------------------------
+Mermaid Diagram:
+
+    graph TD
+      Boot["Bootloader"] -->|"Loads Kernel"| Kernel
+      Kernel -->|"Loads kalki-security.cfg"| SecurityConfig
+      SecurityConfig -->|"Initializes Memory Module"| Memcrypt
+      Memcrypt -->|"Encrypts/Monitors Memory"| SystemMemory
+      SecurityConfig -->|"Hooks"| SystemEvents
+      SystemEvents -->|"Triggers Security Actions"| SecurityServices
+
+- Security config and modules are loaded at boot/initramfs.
+- Memory encryption and monitoring are handled by kernel modules and daemons.
+
+D. Overlay & airootfs Structure
+-------------------------------
+Mermaid Diagram:
+
+    graph TD
+      Overlays["Overlays (ai-tools, avatars, apps, security, etc.)"] -->|"Merged"| airootfs["Final airootfs"]
+      airootfs -->|"Packaged by mkarchiso"| ISO
+
+- Overlays are prepared for each feature and merged into the final airootfs before ISO creation.
+
+E. Sample User/AI Interaction Flow
+----------------------------------
+Mermaid Diagram:
+
+    sequenceDiagram
+      participant U as User
+      participant T as Terminal/GUI
+      participant A as Avatar Engine
+      participant L as LLM Backend
+      participant S as System
+      U->>T: "How do I set up a VPN?"
+      T->>A: "Parse intent, select best avatar"
+      A->>L: "Generate step-by-step instructions"
+      L->>A: "Return instructions"
+      A->>S: "(Optional) Automate VPN setup"
+      S->>A: "Return status"
+      A->>T: "Show instructions and status"
+      T->>U: "Display result, offer further help"
+
+- The system is designed for natural, multi-step reasoning and automation.
+
+----------------------------------------
+END OF TECHNICAL DEEP DIVES
+----------------------------------------
+
+----------------------------------------
+13. More Technical Deep Dives & Reference
+----------------------------------------
+
+F. Avatar Config Example
+------------------------
+Each avatar is defined by a JSON config file. Example:
+
+    {
+      "id": "01-mushak",
+      "name": "Mushak",
+      "role": "Debugger",
+      "llm": "CodeLlama-7B-Instruct",
+      "personality": "Curious, precise, loves finding bugs.",
+      "intro": "A clever mouse appears, ready to debug your code.",
+      "scripts": ["hello.sh", "debug.sh"]
+    }
+
+- Avatars can have custom scripts, LLM assignments, and intros.
+- Personalities and roles are used by the AI engine for context.
+
+G. AI Pipeline Flow
+-------------------
+Mermaid Diagram:
+
+    graph TD
+      UserInput["User Input"] -->|"Natural Language"| KrixAgent
+      KrixAgent -->|"Parse Intent"| IntentParser
+      IntentParser -->|"Select Avatar"| AvatarEngine
+      AvatarEngine -->|"Assign LLM"| LLMRouter
+      LLMRouter -->|"Query LLM"| LLMBackend
+      LLMBackend -->|"Generate Response"| AvatarEngine
+      AvatarEngine -->|"Format Output"| KrixAgent
+      KrixAgent -->|"Show Result"| UserOutput["User Output"]
+
+- The pipeline is modular: swap out LLMs, add new avatars, or extend intent parsing easily.
+
+H. Security Hooks & Memory Protection
+-------------------------------------
+- **Kernel Config:** `kalki-security.cfg` sets kernel parameters for hardening (e.g., sysctl, module whitelists).
+- **Memory Module:** `memcrypt-module.c` is a kernel module for runtime memory encryption.
+- **Daemon:** `memcryptd.c` manages the module and responds to system events.
+- **Hooks:** Scripts in `hooks/` trigger security actions on login, sudo, or suspicious activity.
+- **Service Integration:** Systemd units in `services/` ensure modules/daemons start at boot.
+
+I. Package Management & Overlay Merging
+---------------------------------------
+- **Centralized package lists** in `distro/profiles/*/packages.x86_64`.
+- **Specialized lists** (AI, avatar, dharmic, security) can be included via build scripts.
+- **Overlay directories** (ai-tools, avatar-system, apps, security-layer, etc.) are merged into `airootfs` before ISO creation.
+- **Deduplication:** Build scripts sort and deduplicate package lists before final ISO build.
+
+J. Developer Workflow Example
+-----------------------------
+1. **Clone the repo:**
+   ```sh
+   git clone <repo-url>
+   cd kalki_structured
+   ```
+2. **Set up build environment:**
+   ```sh
+   sudo ./scripts/pre-build-setup.sh
+   ```
+3. **Add or update features:**
+   - Add new avatars in `src/ai-system/omnet-shell/avatars/`
+   - Add new apps in `apps/`
+   - Update package lists in `distro/profiles/`
+4. **Build the ISO:**
+   ```sh
+   sudo ./build-kalki-ultimate.sh --type full
+   ```
+5. **Test in VM:**
+   ```sh
+   ./scripts/test-kalki-vm.sh
+   ```
+6. **Validate tools:**
+   ```sh
+   ./scripts/validate-avatar-tools.sh
+   ```
+7. **Release:**
+   ```sh
+   ./scripts/release-kalki.sh --version 1.0 --sign --publish --announce
+   ```
+
+K. Frontend Deep Dive
+---------------------
+- **Hyprland**: Modern Wayland compositor for glassy, animated UI.
+- **Waybar**: Customizable status bar with notifications and avatar integration.
+- **Krix Terminal/GUI**: Unified chat agent for all system and AI tasks.
+- **OOBE/First Boot**: Wizard guides user through setup, avatar selection, and system intro.
+- **Avatar Recommender**: Daemon monitors context and suggests the best avatar for the task.
+
+L. Backend Deep Dive
+--------------------
+- **Python AI System**: Modular, with clear separation between intent parsing, avatar selection, LLM routing, and task execution.
+- **LLM Integration**: Supports Ollama, CodeLlama, FinGPT, and more. Easily extendable.
+- **Security Modules**: Kernel and userland components for encryption, monitoring, and response.
+- **Metrics/Continuous Improvement**: Python module tracks KPIs, generates reports, and integrates with CI/CD.
+
+M. Example: Adding a New Avatar
+-------------------------------
+1. Create a new directory in `src/ai-system/omnet-shell/avatars/` (e.g., `13-newavatar/`).
+2. Add `config.json` with avatar details (see F above).
+3. Add `avatar.txt` (ASCII art or description).
+4. Add scripts in `scripts/` (e.g., `hello.sh`).
+5. Update the avatar list in the generator script if needed.
+6. Rebuild the ISO and test.
+
+N. Example: Adding a New AI Model
+---------------------------------
+1. Add the model to the LLM backend (e.g., Ollama, local server, etc.).
+2. Update the avatar config to assign the new LLM.
+3. Update the build/package list if new dependencies are needed.
+4. Test avatar selection and LLM routing.
+
+O. Example: Customizing the OOBE
+-------------------------------
+1. Edit `scripts/first-run-setup.sh` for new onboarding steps.
+2. Update branding assets in `iso-profile/kalki-base/airootfs/usr/share/`.
+3. Test in a VM for a seamless first-boot experience.
+
+----------------------------------------
+END OF ADVANCED TECHNICAL DEEP DIVES
+----------------------------------------
+
+============================
+END OF HANDBOOK
+============================ 
