@@ -206,6 +206,35 @@ main() {
     echo -e "ISO Location: ${OUT_DIR}/$(ls -1t "${OUT_DIR}"/*.iso 2>/dev/null | head -n 1 | xargs basename 2>/dev/null)"
     echo -e "Checksum:     ${OUT_DIR}/$(ls -1t "${OUT_DIR}"/*.sha256 2>/dev/null | head -n 1 | xargs basename 2>/dev/null)"
     echo -e "${GREEN}====================${NC}\n"
+
+    # Hardware compatibility check
+    if [ -f "$SCRIPT_DIR/../scripts/check-hardware.sh" ]; then
+        bash "$SCRIPT_DIR/../scripts/check-hardware.sh" || exit 1
+        echo "[build-combined-iso.sh] Hardware compatibility check passed."
+    else
+        echo "[build-combined-iso.sh] Hardware check script not found!"
+        exit 1
+    fi
+
+    # Security best practices check
+    if [ -f "$SCRIPT_DIR/../scripts/check-security.sh" ]; then
+        bash "$SCRIPT_DIR/../scripts/check-security.sh" || exit 1
+        echo "[build-combined-iso.sh] Security check passed."
+    else
+        echo "[build-combined-iso.sh] Security check script not found!"
+        exit 1
+    fi
+
+    # Performance metrics logging
+    if [ -f "$SCRIPT_DIR/../scripts/report-build-metrics.sh" ]; then
+        source "$SCRIPT_DIR/../scripts/report-build-metrics.sh"
+    else
+        echo "[build-combined-iso.sh] Performance metrics script not found!"
+    fi
+
+    if declare -f report_build_metrics_end &>/dev/null; then
+        report_build_metrics_end
+    fi
 }
 
 # Run main function

@@ -13,6 +13,7 @@ NC='\033[0m' # No Color
 WORK_DIR="/tmp/kalki-build-$(date +%s)"
 OUT_DIR="$(pwd)/out"
 PROFILE="iso-profile/kalki-base"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 # Log function
 log() {
@@ -107,10 +108,40 @@ main() {
     # Fix mkinitcpio configuration
     fix_mkinitcpio
     
+    # Hardware compatibility check
+    if [ -f "$SCRIPT_DIR/../scripts/check-hardware.sh" ]; then
+        bash "$SCRIPT_DIR/../scripts/check-hardware.sh" || exit 1
+        echo "[build-minimal-iso.sh] Hardware compatibility check passed."
+    else
+        echo "[build-minimal-iso.sh] Hardware check script not found!"
+        exit 1
+    fi
+
+    # Security best practices check
+    if [ -f "$SCRIPT_DIR/../scripts/check-security.sh" ]; then
+        bash "$SCRIPT_DIR/../scripts/check-security.sh" || exit 1
+        echo "[build-minimal-iso.sh] Security check passed."
+    else
+        echo "[build-minimal-iso.sh] Security check script not found!"
+        exit 1
+    fi
+
+    # Performance metrics logging
+    if [ -f "$SCRIPT_DIR/../scripts/report-build-metrics.sh" ]; then
+        source "$SCRIPT_DIR/../scripts/report-build-metrics.sh"
+    else
+        echo "[build-minimal-iso.sh] Performance metrics script not found!"
+    fi
+    
     # Build the ISO
     build_iso
     
     log "Build process completed successfully!"
+
+    # At the very end of the script, before exit:
+    if declare -f report_build_metrics_end &>/dev/null; then
+        report_build_metrics_end
+    fi
 }
 
 # Run the script

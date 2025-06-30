@@ -4,6 +4,11 @@ set -euo pipefail
 # Kalki OS AI Auto-Installer (placeholder)
 # Usage: ai-auto-installer.sh <replace|dualboot>
 
+if [[ $EUID -ne 0 ]]; then
+  echo "[ERROR] This script must be run as root." >&2
+  exit 1
+fi
+
 LOG_FILE="/var/log/ai-auto-installer.log"
 INSTALL_MODE="${1:-replace}"
 

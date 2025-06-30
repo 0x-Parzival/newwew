@@ -3,6 +3,11 @@
 # Usage: ./release-kalki.sh --version <version> [--sign] [--publish] [--announce]
 set -euo pipefail
 
+if [[ $EUID -ne 0 ]]; then
+  echo "[ERROR] This script must be run as root." >&2
+  exit 1
+fi
+
 VERSION=""
 SIGN=false
 PUBLISH=false

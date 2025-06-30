@@ -10,6 +10,7 @@
 # - Phase 8-10: Testing & Release
 
 set -euo pipefail
+trap 'echo "[ERROR] Build failed at line $LINENO"; exit 1' ERR
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -141,6 +142,40 @@ case "$BUILD_TYPE" in
         error "Invalid build type: $BUILD_TYPE. Must be one of: full, minimal, custom"
         ;;
 esac
+
+# Hardware compatibility check
+if [ -f "$SCRIPTS_DIR/../scripts/check-hardware.sh" ]; then
+  bash "$SCRIPTS_DIR/../scripts/check-hardware.sh" || exit 1
+  echo "[build-kalki.sh] Hardware compatibility check passed."
+else
+  echo "[build-kalki.sh] Hardware check script not found!"
+  exit 1
+fi
+
+# Security best practices check
+if [ -f "$SCRIPTS_DIR/../scripts/check-security.sh" ]; then
+  bash "$SCRIPTS_DIR/../scripts/check-security.sh" || exit 1
+  echo "[build-kalki.sh] Security check passed."
+else
+  echo "[build-kalki.sh] Security check script not found!"
+  exit 1
+fi
+
+# Performance metrics logging
+if [ -f "$SCRIPTS_DIR/../scripts/report-build-metrics.sh" ]; then
+  source "$SCRIPTS_DIR/../scripts/report-build-metrics.sh"
+else
+  echo "[build-kalki.sh] Performance metrics script not found!"
+fi
+
+# Validate custom repositories before proceeding
+if [ -f "$SCRIPTS_DIR/../scripts/validate-repos.sh" ]; then
+  bash "$SCRIPTS_DIR/../scripts/validate-repos.sh" || exit 1
+  echo "[build-kalki.sh] Repository validation passed."
+else
+  echo "[build-kalki.sh] Repository validation script not found!"
+  exit 1
+fi
 
 # Check dependencies
 check_deps() {
@@ -424,12 +459,36 @@ main() {
         fi
     fi
     
+    # At the very end of the script, before exit:
+    if declare -f report_build_metrics_end &>/dev/null; then
+      report_build_metrics_end
+    fi
+    
     return 0
 }
 
 # Handle errors
 trap 'error "Build interrupted by user"' INT TERM
 trap 'cleanup' EXIT
+
+# Check build dependencies before proceeding
+if [ -f "$SCRIPTS_DIR/check-dependencies.sh" ]; then
+  if ! bash "$SCRIPTS_DIR/check-dependencies.sh"; then
+    echo "[build-kalki.sh] Dependency check failed. Attempting to auto-update dependencies..."
+    if [ -f "$SCRIPTS_DIR/suggest-dependencies.sh" ]; then
+      bash "$SCRIPTS_DIR/suggest-dependencies.sh"
+      echo "[build-kalki.sh] Dependencies updated. Please review and re-run the build."
+      exit 1
+    else
+      echo "[build-kalki.sh] suggest-dependencies.sh not found!"
+      exit 1
+    fi
+  fi
+  echo "[build-kalki.sh] Dependency check passed."
+else
+  echo "[build-kalki.sh] Dependency check script not found!"
+  exit 1
+fi
 
 # Run main function
 main "$@"

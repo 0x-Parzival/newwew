@@ -10,6 +10,7 @@
 # - Phase 8-10: Testing & Release
 
 set -euo pipefail
+trap 'echo "[ERROR] Build failed at line $LINENO"; exit 1' ERR
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -430,6 +431,25 @@ main() {
 # Handle errors
 trap 'error "Build interrupted by user"' INT TERM
 trap 'cleanup' EXIT
+
+# Check build dependencies before proceeding
+if [ -f "$SCRIPTS_DIR/check-dependencies.sh" ]; then
+  if ! bash "$SCRIPTS_DIR/check-dependencies.sh"; then
+    echo "[build-kalki.sh] Dependency check failed. Attempting to auto-update dependencies..."
+    if [ -f "$SCRIPTS_DIR/suggest-dependencies.sh" ]; then
+      bash "$SCRIPTS_DIR/suggest-dependencies.sh"
+      echo "[build-kalki.sh] Dependencies updated. Please review and re-run the build."
+      exit 1
+    else
+      echo "[build-kalki.sh] suggest-dependencies.sh not found!"
+      exit 1
+    fi
+  fi
+  echo "[build-kalki.sh] Dependency check passed."
+else
+  echo "[build-kalki.sh] Dependency check script not found!"
+  exit 1
+fi
 
 # Run main function
 main "$@"

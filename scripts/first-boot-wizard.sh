@@ -4,6 +4,11 @@ set -euo pipefail
 # Kalki OS First Boot Wizard - Fully Automated
 # Auto-launches, defaults to safe options, and minimizes user input
 
+if [[ $EUID -ne 0 ]]; then
+  echo "[ERROR] This script must be run as root." >&2
+  exit 1
+fi
+
 LOG_FILE="/var/log/first-boot-wizard.log"
 VIDEO_FILE="/usr/share/kalki/avatarintro.mp4" # Placeholder path
 AVATAR_LIST=(

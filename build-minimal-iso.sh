@@ -107,10 +107,40 @@ main() {
     # Fix mkinitcpio configuration
     fix_mkinitcpio
     
+    # Hardware compatibility check
+    if [ -f "scripts/check-hardware.sh" ]; then
+        bash scripts/check-hardware.sh || exit 1
+        echo "[build-minimal-iso.sh] Hardware compatibility check passed."
+    else
+        echo "[build-minimal-iso.sh] Hardware check script not found!"
+        exit 1
+    fi
+
+    # Security best practices check
+    if [ -f "scripts/check-security.sh" ]; then
+        bash scripts/check-security.sh || exit 1
+        echo "[build-minimal-iso.sh] Security check passed."
+    else
+        echo "[build-minimal-iso.sh] Security check script not found!"
+        exit 1
+    fi
+
+    # Performance metrics logging
+    if [ -f "scripts/report-build-metrics.sh" ]; then
+        source scripts/report-build-metrics.sh
+    else
+        echo "[build-minimal-iso.sh] Performance metrics script not found!"
+    fi
+    
     # Build the ISO
     build_iso
     
     log "Build process completed successfully!"
+
+    # At the very end of the script, before exit:
+    if declare -f report_build_metrics_end &>/dev/null; then
+        report_build_metrics_end
+    fi
 }
 
 # Run the script
