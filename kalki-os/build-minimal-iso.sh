@@ -34,12 +34,16 @@ done
 
 # Robust path resolution (symlink-safe)
 resolve_path() {
+    # Usage: resolve_path <path>
+    # Outputs the absolute path of the given file or directory
+    local target="$1"
     if command -v realpath >/dev/null 2>&1; then
-        realpath "$1"
-    elif command -v readlink >/dev/null 2>&1; then
-        readlink -f "$1"
+        realpath "$target"
+    elif command -v grealpath >/dev/null 2>&1; then
+        grealpath "$target"
     else
-        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+        # Fallback: use Python for cross-platform compatibility
+        python3 -c "import os,sys; print(os.path.abspath(sys.argv[1]))" "$target"
     fi
 }
 SCRIPT_PATH="$(resolve_path "$0")"
@@ -83,9 +87,16 @@ cleanup() {
 # Check disk space
 check_disk_space() {
     local required_space=8000 # 8GB in MB
-    local available_space=$(df -m --output=avail / | tail -n 1)
-    if [ "$available_space" -lt "$required_space" ]; then
-        error "Not enough disk space. Need at least 8GB free, but only ${available_space}MB available."
+    local available_space
+    if df -m . >/dev/null 2>&1; then
+        # Linux/GNU
+        available_space=$(df -m . | awk 'NR==2 {print $4}')
+    else
+        # macOS/BSD
+        available_space=$(df -k . | awk 'NR==2 {print int($4/1024)}')
+    fi
+    if [ -z "$available_space" ] || [ "$available_space" -lt "$required_space" ]; then
+        error "Not enough disk space. Need at least 8GB free, but only ${available_space:-0}MB available."
     fi
     log "Available disk space: ${available_space}MB"
 }
@@ -95,13 +106,23 @@ fix_mkinitcpio() {
     log "Fixing mkinitcpio configuration..."
     local mkinitcpio_conf="$PROFILE/airootfs/etc/mkinitcpio.conf"
     if [ -f "$mkinitcpio_conf" ]; then
-        sudo sed -i 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$mkinitcpio_conf"
-        sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$mkinitcpio_conf"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sudo sed -i '' 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$mkinitcpio_conf"
+            sudo sed -i '' 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$mkinitcpio_conf"
+        else
+            sudo sed -i 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$mkinitcpio_conf"
+            sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$mkinitcpio_conf"
+        fi
     fi
     local preset_file="$PROFILE/airootfs/etc/mkinitcpio.d/linux.preset"
     if [ -f "$preset_file" ]; then
-        sudo sed -i 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$preset_file"
-        sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$preset_file"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sudo sed -i '' 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$preset_file"
+            sudo sed -i '' 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$preset_file"
+        else
+            sudo sed -i 's/^COMPRESSION=.*/COMPRESSION="gzip"/' "$preset_file"
+            sudo sed -i 's/^COMPRESSION_OPTIONS=.*/COMPRESSION_OPTIONS=("-9")/' "$preset_file"
+        fi
     fi
 }
 

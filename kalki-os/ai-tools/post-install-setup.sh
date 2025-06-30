@@ -12,7 +12,7 @@ AI_HOME="/home/${AI_USER}"
 LOG_FILE="/var/log/krix-ai/post-install.log"
 
 # Create log directory
-mkdir -p "$(dirname "${LOG_FILE}")
+mkdir -p "$(dirname "${LOG_FILE}")"
 touch "${LOG_FILE}"
 chown -R ${AI_USER}:${AI_USER} "$(dirname "${LOG_FILE}")"
 chmod 644 "${LOG_FILE}"

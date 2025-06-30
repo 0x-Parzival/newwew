@@ -51,9 +51,13 @@ resolve_path() {
   elif command -v readlink >/dev/null 2>&1; then
     readlink -f "$1"
   else
-    (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+    # Portable fallback: works in all POSIX shells
+    dir=$(dirname -- "$1")
+    base=$(basename -- "$1")
+    echo "$(cd "$dir" 2>/dev/null && pwd)/$base"
   fi
 }
+echo "[DEBUG] Running shell: $SHELL"
 SCRIPT_PATH="$(resolve_path "$0")"
 PROJECT_ROOT="$(dirname "$SCRIPT_PATH")"
 OUT_DIR="$PROJECT_ROOT/out"
@@ -107,6 +111,13 @@ if grep -q -E '(vmx|svm)' /proc/cpuinfo; then
 else
   warn "CPU does not support hardware virtualization (VT-x/AMD-V). Falling back to TCG."
   KVM_ENABLED=false
+fi
+
+# Set QEMU accelerator
+if [ "$KVM_ENABLED" = true ]; then
+  ACCEL="kvm"
+else
+  ACCEL="tcg"
 fi
 
 # Check for required packages (Arch Linux)
@@ -168,7 +179,7 @@ QEMU_CMD=(
     -name "Kalki OS VM"
     -m "$RAM"
     -smp "$CPUS"
-    -machine type=q35,accel=${KVM_ENABLED:+kvm}${KVM_ENABLED:=tcg}
+    -machine type=q35,accel=$ACCEL
     -cpu host
     -device virtio-vga-gl
     -display sdl,gl=on

@@ -24,9 +24,13 @@ resolve_path() {
     elif command -v readlink >/dev/null 2>&1; then
         readlink -f "$1"
     else
-        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+        # Portable fallback: works in all POSIX shells
+        dir=$(dirname -- "$1")
+        base=$(basename -- "$1")
+        echo "$(cd "$dir" 2>/dev/null && pwd)/$base"
     fi
 }
+echo "[DEBUG] Running shell: $SHELL"
 SCRIPT_PATH="$(resolve_path "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 
@@ -103,37 +107,37 @@ combine_packages() {
     local combined_pkgs="$(mktemp)"
     
     # Base packages
-    cat "/home/xero/os/kalki-os/iso-profile/kalki-base/packages.x86_64" > "$combined_pkgs"
+    cat "$SCRIPT_DIR/../iso-profile/kalki-base/packages.x86_64" > "$combined_pkgs"
     
     # Add AI components
-    if [ -f "/home/xero/os/kalki-os/ai-tools/ai-packages.txt" ]; then
+    if [ -f "$SCRIPT_DIR/../ai-tools/ai-packages.txt" ]; then
         log "Adding AI packages..."
-        cat "/home/xero/os/kalki-os/ai-tools/ai-packages.txt" >> "$combined_pkgs"
+        cat "$SCRIPT_DIR/../ai-tools/ai-packages.txt" >> "$combined_pkgs"
     fi
     
     # Add Avatar System components
-    if [ -f "/home/xero/os/kalki-os/avatar-system/avatar-packages.txt" ]; then
+    if [ -f "$SCRIPT_DIR/../avatar-system/avatar-packages.txt" ]; then
         log "Adding Avatar System packages..."
-        cat "/home/xero/os/kalki-os/avatar-system/avatar-packages.txt" >> "$combined_pkgs"
+        cat "$SCRIPT_DIR/../avatar-system/avatar-packages.txt" >> "$combined_pkgs"
     fi
     
     # Add Dharmic Tools
-    if [ -f "/home/xero/os/kalki-os/ai-tools/dharmic-packages.txt" ]; then
+    if [ -f "$SCRIPT_DIR/../ai-tools/dharmic-packages.txt" ]; then
         log "Adding Dharmic Tools packages..."
-        cat "/home/xero/os/kalki-os/ai-tools/dharmic-packages.txt" >> "$combined_pkgs"
+        cat "$SCRIPT_DIR/../ai-tools/dharmic-packages.txt" >> "$combined_pkgs"
     fi
     
     # Add Security packages
-    if [ -f "/home/xero/os/kalki-os/security-layer/security-packages.txt" ]; then
+    if [ -f "$SCRIPT_DIR/../security-layer/security-packages.txt" ]; then
         log "Adding Security packages..."
-        cat "/home/xero/os/kalki-os/security-layer/security-packages.txt" >> "$combined_pkgs"
+        cat "$SCRIPT_DIR/../security-layer/security-packages.txt" >> "$combined_pkgs"
     fi
     
     # Remove duplicates and sort
-    sort -u "$combined_pkgs" > "/home/xero/os/kalki-os/iso-profile/kalki-base/packages.x86_64"
+    sort -u "$combined_pkgs" > "$SCRIPT_DIR/../iso-profile/kalki-base/packages.x86_64"
     rm -f "$combined_pkgs"
     
-    log "Combined $(wc -l /home/xero/os/kalki-os/iso-profile/kalki-base/packages.x86_64 | awk '{print $1}') packages"
+    log "Combined $(wc -l $SCRIPT_DIR/../iso-profile/kalki-base/packages.x86_64 | awk '{print $1}') packages"
 }
 
 # Copy custom files and configurations
@@ -141,28 +145,28 @@ copy_custom_files() {
     log "Copying custom files and configurations..."
     
     # AI Components
-    if [ -d "/home/xero/os/kalki-os/ai-tools/" ]; then
+    if [ -d "$SCRIPT_DIR/../ai-tools/" ]; then
         log "Copying AI components..."
-        sudo cp -r "/home/xero/os/kalki-os/ai-tools/" "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/opt/"
+        sudo cp -r "$SCRIPT_DIR/../ai-tools/" "$SCRIPT_DIR/../iso-profile/kalki-base/airootfs/opt/"
     fi
     
     # Avatar System
-    if [ -d "/home/xero/os/kalki-os/avatar-system/" ]; then
+    if [ -d "$SCRIPT_DIR/../avatar-system/" ]; then
         log "Copying Avatar System..."
-        sudo cp -r "/home/xero/os/kalki-os/avatar-system/" "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/opt/kalki/"
+        sudo cp -r "$SCRIPT_DIR/../avatar-system/" "$SCRIPT_DIR/../iso-profile/kalki-base/airootfs/opt/kalki/"
     fi
     
     # Security Configurations
-    if [ -d "/home/xero/os/kalki-os/security-layer/" ]; then
+    if [ -d "$SCRIPT_DIR/../security-layer/" ]; then
         log "Copying security configurations..."
-        sudo cp -r "/home/xero/os/kalki-os/security-layer/etc/" "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/"
+        sudo cp -r "$SCRIPT_DIR/../security-layer/etc/" "$SCRIPT_DIR/../iso-profile/kalki-base/airootfs/"
     fi
     
     # Post-install scripts
-    if [ -f "/home/xero/os/kalki-os/ai-post-install.sh" ]; then
+    if [ -f "$SCRIPT_DIR/../ai-post-install.sh" ]; then
         log "Copying post-install scripts..."
-        sudo cp "/home/xero/os/kalki-os/ai-post-install.sh" "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/root/"
-        sudo chmod +x "/home/xero/os/kalki-os/iso-profile/kalki-base/airootfs/root/ai-post-install.sh"
+        sudo cp "$SCRIPT_DIR/../ai-post-install.sh" "$SCRIPT_DIR/../iso-profile/kalki-base/airootfs/root/"
+        sudo chmod +x "$SCRIPT_DIR/../iso-profile/kalki-base/airootfs/root/ai-post-install.sh"
     fi
 }
 
@@ -171,7 +175,7 @@ build_iso() {
     log "Starting ISO build process..."
     
     # Ensure we're in the right directory
-    cd "/home/xero/os/kalki-os"
+    cd "$SCRIPT_DIR/.."
     
     # Run mkarchiso with all features enabled
     sudo mkarchiso -v \

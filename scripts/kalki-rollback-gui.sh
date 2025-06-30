@@ -9,7 +9,7 @@ resolve_path() {
     elif command -v readlink >/dev/null 2>&1; then
         readlink -f "$1"
     else
-        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+        echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
     fi
 }
 SCRIPT_PATH="$(resolve_path "$0")"

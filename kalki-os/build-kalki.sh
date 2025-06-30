@@ -46,10 +46,13 @@ resolve_path() {
     elif command -v readlink >/dev/null 2>&1; then
         readlink -f "$1"
     else
-        # Fallback: use cd+pwd (not symlink-safe)
-        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+        # Portable fallback: works in all POSIX shells
+        dir=$(dirname -- "$1")
+        base=$(basename -- "$1")
+        echo "$(cd "$dir" 2>/dev/null && pwd)/$base"
     fi
 }
+echo "[DEBUG] Running shell: $SHELL"
 BASE_DIR="$(resolve_path "${BASH_SOURCE[0]}")"
 BASE_DIR="$(dirname "$BASE_DIR")"
 SCRIPTS_DIR="${BASE_DIR}/scripts"

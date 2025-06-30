@@ -26,4 +26,6 @@ done
 if [[ $all_ok -eq 1 ]]; then
   echo "Profile structure is valid."
 else
-  echo "Profile had missing files. Defaults created where possible." 
+  echo "Profile had missing files. Defaults created where possible."
+fi
+exit 0 

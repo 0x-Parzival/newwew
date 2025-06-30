@@ -1,1 +1,0 @@
-./kalki-os/ai-tools/krix-ai/requirements.txt

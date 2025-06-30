@@ -33,12 +33,12 @@ download_model() {
     echo "Downloading ${model_name}..."
     
     # Use huggingface_hub for downloading
-    python3 -c "
+    MODEL_NAME="$model_name" MODEL_DIR="$MODEL_DIR" python3 <<'EOF'
 import os
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, snapshot_download
 
-model = '$model_name'
-local_dir = '$MODEL_DIR'
+model = os.environ["MODEL_NAME"]
+local_dir = os.environ["MODEL_DIR"]
 
 # Create model directory if it doesn't exist
 os.makedirs(os.path.join(local_dir, os.path.basename(model)), exist_ok=True)
@@ -52,10 +52,9 @@ try:
         local_dir=os.path.join(local_dir, os.path.basename(model)),
         local_dir_use_symlinks=False
     )
-except:
+except Exception:
     try:
         # If no GGUF files, try to download all files
-        from huggingface_hub import snapshot_download
         snapshot_download(
             repo_id=model,
             local_dir=os.path.join(local_dir, os.path.basename(model)),
@@ -63,7 +62,7 @@ except:
         )
     except Exception as e:
         print(f"Error downloading {model}: {str(e)}")
-"
+EOF
     
     # Set correct permissions
     chown -R kalki:kalki "$MODEL_DIR"
