@@ -39,9 +39,22 @@ RESUME=false
 VERBOSE=false
 KEEP_WORKDIR=false
 
-# Paths
-BASE_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Robust path resolution (symlink-safe)
+resolve_path() {
+    if command -v realpath >/dev/null 2>&1; then
+        realpath "$1"
+    elif command -v readlink >/dev/null 2>&1; then
+        readlink -f "$1"
+    else
+        # Fallback: use cd+pwd (not symlink-safe)
+        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+    fi
+}
+BASE_DIR="$(resolve_path "${BASH_SOURCE[0]}")"
+BASE_DIR="$(dirname "$BASE_DIR")"
 SCRIPTS_DIR="${BASE_DIR}/scripts"
+
+# Paths
 VALIDATION_DIR="${BASE_DIR}"
 PHASE_DIRS=("${BASE_DIR}/phase7" "${BASE_DIR}/phase8" "${BASE_DIR}/phase9-docs" "${BASE_DIR}/phase10-release")
 
@@ -142,6 +155,15 @@ case "$BUILD_TYPE" in
         error "Invalid build type: $BUILD_TYPE. Must be one of: full, minimal, custom"
         ;;
 esac
+
+# Dependency check at the start
+if [ -f "$SCRIPTS_DIR/../scripts/check-dependencies.sh" ]; then
+  bash "$SCRIPTS_DIR/../scripts/check-dependencies.sh" || exit 1
+  echo "[build-kalki.sh] Dependency check passed."
+else
+  echo "[build-kalki.sh] Dependency check script not found!"
+  exit 1
+fi
 
 # Hardware compatibility check
 if [ -f "$SCRIPTS_DIR/../scripts/check-hardware.sh" ]; then
@@ -470,25 +492,6 @@ main() {
 # Handle errors
 trap 'error "Build interrupted by user"' INT TERM
 trap 'cleanup' EXIT
-
-# Check build dependencies before proceeding
-if [ -f "$SCRIPTS_DIR/check-dependencies.sh" ]; then
-  if ! bash "$SCRIPTS_DIR/check-dependencies.sh"; then
-    echo "[build-kalki.sh] Dependency check failed. Attempting to auto-update dependencies..."
-    if [ -f "$SCRIPTS_DIR/suggest-dependencies.sh" ]; then
-      bash "$SCRIPTS_DIR/suggest-dependencies.sh"
-      echo "[build-kalki.sh] Dependencies updated. Please review and re-run the build."
-      exit 1
-    else
-      echo "[build-kalki.sh] suggest-dependencies.sh not found!"
-      exit 1
-    fi
-  fi
-  echo "[build-kalki.sh] Dependency check passed."
-else
-  echo "[build-kalki.sh] Dependency check script not found!"
-  exit 1
-fi
 
 # Run main function
 main "$@"

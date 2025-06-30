@@ -17,6 +17,28 @@ OUT_DIR="./out"
 PROFILE="kalki-base"
 ISO_NAME="kalki-os-combined"
 
+# Robust path resolution (symlink-safe)
+resolve_path() {
+    if command -v realpath >/dev/null 2>&1; then
+        realpath "$1"
+    elif command -v readlink >/dev/null 2>&1; then
+        readlink -f "$1"
+    else
+        (cd "$(dirname "$1")" && pwd)/$(basename "$1")
+    fi
+}
+SCRIPT_PATH="$(resolve_path "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+
+# Dependency check at the start
+if [ -f "$SCRIPT_DIR/../scripts/check-dependencies.sh" ]; then
+  bash "$SCRIPT_DIR/../scripts/check-dependencies.sh" || exit 1
+  echo "[build-combined-iso.sh] Dependency check passed."
+else
+  echo "[build-combined-iso.sh] Dependency check script not found!"
+  exit 1
+fi
+
 # Logging functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"

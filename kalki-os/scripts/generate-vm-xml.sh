@@ -1,16 +1,62 @@
-<!--
-  Kalki OS Libvirt VM Configuration
-  To use this file:
-    1. Update the <source file=...> for the ISO and disk image to match your build/output locations.
-    2. Import with: virsh define kalki-vm.xml
-    3. Start with: virsh start kalki-vm
-    4. For GUI: use virt-manager and browse to the updated disk/ISO.
--->
+#!/bin/bash
+# generate-vm-xml.sh: Generate a customized kalki-vm.xml for your environment and optionally launch the VM
+#
+# Usage:
+#   ./generate-vm-xml.sh [--iso /path/to/kalki.iso] [--disk /path/to/disk.img] [--ram 8] [--cpus 4] [--output kalki-vm.xml] [--launch]
+#
+# If not specified, prompts for each value. Defaults:
+#   --iso: latest kalki-*.iso in ../out/
+#   --disk: /var/lib/libvirt/images/kalki-vm.qcow2
+#   --ram: 8 (GiB)
+#   --cpus: 4
+#   --output: kalki-vm.xml
+#   --launch: define and start the VM after generating XML
+
+set -euo pipefail
+
+ISO_PATH=""
+DISK_PATH="/var/lib/libvirt/images/kalki-vm.qcow2"
+RAM=8
+CPUS=4
+OUTPUT="kalki-vm.xml"
+LAUNCH=false
+
+# Parse args
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --iso) ISO_PATH="$2"; shift 2;;
+    --disk) DISK_PATH="$2"; shift 2;;
+    --ram) RAM="$2"; shift 2;;
+    --cpus) CPUS="$2"; shift 2;;
+    --output) OUTPUT="$2"; shift 2;;
+    --launch) LAUNCH=true; shift;;
+    --help|-h)
+      grep '^#' "$0" | cut -c 3-
+      exit 0;;
+    *) echo "Unknown argument: $1"; exit 1;;
+  esac
+done
+
+# Find latest ISO if not specified
+if [ -z "$ISO_PATH" ]; then
+  ISO_PATH=$(find ../out -name "kalki-*.iso" -type f | sort -r | head -n 1 || true)
+  if [ -z "$ISO_PATH" ]; then
+    read -rp "Enter path to Kalki OS ISO: " ISO_PATH
+  fi
+fi
+
+read -rp "ISO path [$ISO_PATH]: " input; ISO_PATH="${input:-$ISO_PATH}"
+read -rp "Disk image path [$DISK_PATH]: " input; DISK_PATH="${input:-$DISK_PATH}"
+read -rp "RAM in GiB [$RAM]: " input; RAM="${input:-$RAM}"
+read -rp "CPU cores [$CPUS]: " input; CPUS="${input:-$CPUS}"
+read -rp "Output XML file [$OUTPUT]: " input; OUTPUT="${input:-$OUTPUT}"
+
+cat > "$OUTPUT" <<EOF
 <domain type='kvm'>
   <name>kalki-vm</name>
-  <memory unit='GiB'>8</memory>
-  <currentMemory unit='GiB'>8</currentMemory>
-  <vcpu placement='static'>4</vcpu>
+  <memory unit='GiB'>$RAM</memory>
+  <currentMemory unit='GiB'>$RAM</currentMemory>
+  <vcpu placement='static'>$CPUS</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-7.2'>hvm</type>
     <boot dev='cdrom'/>
@@ -34,19 +80,17 @@
   </pm>
   <devices>
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
-    <!-- Update the ISO path below to your latest build output -->
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
-      <source file='/absolute/path/to/your/kalki-*.iso'/>
+      <source file='$ISO_PATH'/>
       <target dev='sda' bus='sata'/>
       <readonly/>
       <boot order='1'/>
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
     </disk>
-    <!-- Update the disk image path below as needed -->
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2'/>
-      <source file='/var/lib/libvirt/images/kalki-vm.qcow2'/>
+      <source file='$DISK_PATH'/>
       <target dev='vda' bus='virtio'/>
       <boot order='2'/>
       <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
@@ -121,3 +165,19 @@
     </rng>
   </devices>
 </domain>
+EOF
+
+echo "VM XML generated at $OUTPUT"
+
+if [ "$LAUNCH" = true ]; then
+  echo "Defining and starting VM via virsh..."
+  if ! command -v virsh >/dev/null 2>&1; then
+    echo "virsh not found. Please install libvirt-clients or run manually: virsh define $OUTPUT && virsh start kalki-vm"; exit 1
+  fi
+  virsh destroy kalki-vm 2>/dev/null || true
+  virsh undefine kalki-vm 2>/dev/null || true
+  virsh define "$OUTPUT"
+  virsh start kalki-vm
+  echo "VM 'kalki-vm' started. Connect with virt-manager or:"
+  echo "  virsh console kalki-vm"
+fi 
