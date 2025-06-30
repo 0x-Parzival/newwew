@@ -213,3 +213,25 @@ python-llama-cpp
 python-pip
 python-torch
 python-transformers
+
+mpv
+
+# Minimal, best-in-class daily use software
+thunderbird
+libreoffice-fresh
+okular
+kdenlive
+transmission-gtk
+
+# Wine stack for Windows compatibility
+wine
+wine-mono
+wine-gecko
+winetricks
+q4wine
+
+# Utilities
+gparted
+timeshift
+cheese
+simple-scan

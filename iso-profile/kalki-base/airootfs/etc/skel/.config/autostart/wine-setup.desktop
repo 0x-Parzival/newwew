@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Wine Setup
+Exec=/usr/bin/env bash /usr/share/kalki/scripts/wine-setup.sh
+X-GNOME-Autostart-enabled=true
+NoDisplay=true 
