@@ -1,0 +1,58 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "spacing": 4,
+    "modules-left": ["custom/kalki-logo", "wlr/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": ["network", "pulseaudio", "battery", "tray"],
+    "custom/kalki-logo": {
+        "format": "\uD83D\uDD49\uFE0F",
+        "tooltip": false,
+        "on-click": "krix-term"
+    },
+    "clock": {
+        "format": "{:%a, %b %d %H:%M}",
+        "tooltip-format": "{:%A, %B %d, %Y}"
+    },
+    "wlr/workspaces": {
+        "format": "{name}",
+        "on-click": "activate"
+    },
+    "network": {
+        "format-wifi": "{essid} ({signalStrength}%) \uf1eb ",
+        "format-ethernet": "{ifname} \uf0c1",
+        "format-disconnected": "Disconnected \u26a0",
+        "tooltip-format": "{ifname}"
+    },
+    "pulseaudio": {
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}\uf294",
+        "format-muted": "\uD83D\uDD07",
+        "format-icons": {
+            "headphone": "\uf025",
+            "hands-free": "\uf590",
+            "headset": "\uf590",
+            "phone": "\uf095",
+            "portable": "\uf095",
+            "car": "\uf1b9",
+            "default": ["\uD83D\uDD08", "\uD83D\uDD09", "\uD83D\uDD0A"]
+        },
+        "on-click": "pavucontrol"
+    },
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-charging": "{capacity}% \uf5e7",
+        "format-plugged": "{capacity}% \uf1e6",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["\uf244", "\uf243", "\uf242", "\uf241", "\uf240"]
+    },
+    "tray": {
+        "icon-size": 21,
+        "spacing": 10
+    }
+}

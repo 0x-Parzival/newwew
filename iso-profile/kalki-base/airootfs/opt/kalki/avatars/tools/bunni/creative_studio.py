@@ -47,7 +47,7 @@ class BunniCreativeStudio:
                 'structure': 'conversational with examples',
                 'phrases': [
                     'Hey there!',
-                    'You know what's cool?',
+                    "You know what's cool?",
                     'Let me break it down',
                     'Here's the deal',
                     'Fun fact:'

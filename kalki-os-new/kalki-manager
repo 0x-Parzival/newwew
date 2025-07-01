@@ -1,0 +1,85 @@
+#!/bin/bash
+# Kalki OS Wrapper Manager
+# CLI utility for managing Kalki OS wrapper
+
+set -e
+
+KALKI_ROOT="/opt/kalki"
+
+cmd_status() {
+    echo "🌟 Kalki OS Wrapper Status"
+    echo "=========================="
+    echo "📦 Wrapper: $(systemctl is-active kalki-wrapper 2>/dev/null || echo 'inactive')"
+    echo "🧠 AI Core: $(systemctl is-active kalki-agent57 2>/dev/null || echo 'inactive')"
+    echo "👥 Avatars: $(systemctl is-active kalki-avatar-manager 2>/dev/null || echo 'inactive')"
+    echo "🔒 Security: $(systemctl is-active data-treya 2>/dev/null || echo 'inactive')"
+    
+    if [[ -f "$KALKI_ROOT/wrapper/kalki-manifest.json" ]]; then
+        echo "📋 Wrapper Version: $(jq -r '.kalki_version' $KALKI_ROOT/wrapper/kalki-manifest.json 2>/dev/null || echo 'Unknown')"
+    fi
+}
+
+cmd_enable_overlay() {
+    local overlay="$1"
+    if [[ -z "$overlay" ]]; then
+        echo "❌ Please specify an overlay to enable"
+        echo "Available overlays:"
+        ls "$KALKI_ROOT/wrapper/overlays/" 2>/dev/null || echo "No overlays found"
+        return 1
+    fi
+    
+    echo "🔧 Enabling $overlay overlay..."
+    
+    if [[ -f "$KALKI_ROOT/wrapper/overlays/$overlay/install.sh" ]]; then
+        bash "$KALKI_ROOT/wrapper/overlays/$overlay/install.sh"
+        echo "✅ $overlay overlay enabled"
+    else
+        echo "❌ Overlay $overlay not found"
+        return 1
+    fi
+}
+
+cmd_list_avatars() {
+    echo "👥 Available Avatars:"
+    for avatar_dir in $KALKI_ROOT/avatars/*/ 2>/dev/null; do
+        if [[ -d "$avatar_dir" ]]; then
+            avatar_name=$(basename "$avatar_dir")
+            status="inactive"
+            if pgrep -f "$avatar_name" >/dev/null; then
+                status="active"
+            fi
+            echo "  $avatar_name [$status]"
+        fi
+    done
+}
+
+cmd_rebuild_iso() {
+    echo "🔨 Rebuilding Kalki OS ISO..."
+    if [[ -f "$(dirname "$0")/build-kalki-wrapper.sh" ]]; then
+        bash "$(dirname "$0")/build-kalki-wrapper.sh"
+        echo "✅ ISO rebuild complete"
+    else
+        echo "❌ Build script not found"
+        return 1
+    fi
+}
+
+cmd_help() {
+    echo "Kalki OS Wrapper Manager"
+    echo "Usage: kalki-manager "
+    echo ""
+    echo "Commands:"
+    echo "  status              Show wrapper status"
+    echo "  enable-overlay      Enable an overlay"
+    echo "  list-avatars        List available avatars"
+    echo "  rebuild-iso         Rebuild Kalki ISO"
+    echo "  help                Show this help"
+}
+
+case "${1:-help}" in
+    status) cmd_status ;;
+    enable-overlay) cmd_enable_overlay "${2:-}" ;;
+    list-avatars) cmd_list_avatars ;;
+    rebuild-iso) cmd_rebuild_iso ;;
+    help|*) cmd_help ;;
+esac 
