@@ -1,0 +1,25 @@
+# Kalki OS Handbook (Excerpt)
+
+## Build & VM Requirements (Quick Reference)
+
+- **Required Packages:**
+  - See the main README for full cross-distro package names.
+  - Key tools: archiso, mkinitcpio-archiso, qemu, libvirt, virt-manager, sudo, shellcheck, reflector, plymouth, ollama, python3, jq, zenity, etc.
+
+- **Build Steps:**
+  1. Run `scripts/check-dependencies.sh` before building.
+  2. Build with `./build-minimal-iso.sh --verbose` or `./build-kalki.sh --verbose`.
+  3. Test in a VM with `./test-kalki-vm.sh` or use `generate-vm-xml.sh --launch` for libvirt/virt-manager.
+
+- **Troubleshooting:**
+  - Scripts will report missing dependencies and how to install them.
+  - Do not run build scripts as root; use `sudo` only when prompted.
+  - Ensure virtualization is enabled in BIOS and you have enough RAM/CPU.
+
+- **Shell Script Linting:**
+  - For best practices, install `shellcheck` and run:
+    ```sh
+    find . -name '*.sh' -exec shellcheck {} +
+    ```
+
+For full details, see the main README.md and scripts/README.md. 

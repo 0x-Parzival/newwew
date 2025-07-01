@@ -1,0 +1,12 @@
+{
+    "id": "02-kurma",
+    "name": "Kurma",
+    "title": "The Supporter",
+    "description": "Placeholder for Kurma avatar - The Supporter",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

@@ -1,0 +1,313 @@
+#!/usr/bin/env python3
+"""
+Enhanced Krix-Term: Complete Avatar System Integration
+The ultimate dharmic computing interface with 12 specialized avatars
+"""
+
+import asyncio
+import json
+import sys
+import os
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.columns import Columns
+    from rich.live import Live
+    from rich.spinner import Spinner
+    from prompt_toolkit import prompt
+    from prompt_toolkit.completion import WordCompleter
+except ImportError:
+    print("📦 Installing enhanced dependencies...")
+    os.system("pip install rich prompt-toolkit")
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+
+# Import our avatar systems
+sys.path.append('/opt/kalki/omnet')
+sys.path.append('/opt/kalki/avatars')
+
+from avatar_communication import AvatarCommunicationEngine
+from task_delegation import AvatarTaskDelegator
+
+class EnhancedKrixTerm:
+    def __init__(self):
+        self.console = Console()
+        self.communication_engine = AvatarCommunicationEngine()
+        self.task_delegator = AvatarTaskDelegator()
+        self.current_avatar = "krix"
+        self.active_session = f"session_{int(datetime.now().timestamp())}"
+        
+        # Available commands
+        self.commands = [
+            'switch', 'summon', 'delegate', 'status', 'help', 'list',
+            'collaborate', 'learn', 'customize', 'export', 'import'
+        ]
+        
+        # Avatar quick access
+        self.avatar_shortcuts = {
+            'm': 'mushak', 'n': 'nandi', 's': 'shera', 'b': 'bunni',
+            'k': 'kalkian', 'g': 'nag', 'c': 'chetak', 'a': 'goat',
+            'o': 'monki', 'r': 'roosty', 'w': 'chew-chew', 'p': 'chill-pig'
+        }
+        
+        self.completer = WordCompleter(
+            self.commands + list(self.avatar_shortcuts.values()) + list(self.avatar_shortcuts.keys())
+        )
+    
+    def display_enhanced_greeting(self):
+        """Display comprehensive greeting with all avatars"""
+        
+        # Create avatar status table
+        table = Table(title="🕉️ Kalki OS Avatar Network - OMNet Status", show_header=True, header_style="bold magenta")
+        table.add_column("Avatar", style="cyan", width=12)
+        table.add_column("Specialty", style="green", width=25)
+        table.add_column("Status", style="yellow", width=10)
+        table.add_column("Shortcut", style="blue", width=8)
+        
+        avatars_info = [
+            ("Mushak ⚡", "Swift Debugging & Optimization", "Active", "m"),
+            ("Nandi 🛡️", "Financial & System Stability", "Active", "n"),
+            ("Shera 🗡️", "Cybersecurity Guardian", "Active", "s"),
+            ("Bunni 🎨", "Creative Muse & Writing", "Active", "b"),
+            ("Kalkian 🐉", "Divine Developer Mode", "Active", "k"),
+            ("Nag 🐍", "Strategic Planning", "Active", "g"),
+            ("Chetak 🐎", "Productivity Manager", "Active", "c"),
+            ("G.O.A.T. 🐐", "Artistic Soul & Music", "Active", "a"),
+            ("Monki 🐒", "Gesture & Hinglish Control", "Active", "o"),
+            ("Roosty 🐓", "Timekeeper & Goals", "Active", "r"),
+            ("Chew-Chew 🐕", "Watchdog AI", "Active", "w"),
+            ("Chill Pig 🐖", "Mood & Wellness Manager", "Active", "p")
+        ]
+        
+        for avatar, specialty, status, shortcut in avatars_info:
+            table.add_row(avatar, specialty, status, shortcut)
+        
+        self.console.print(table)
+        
+        # Usage instructions
+        instructions = Panel(
+            """🌟 [bold cyan]Enhanced Krix-Term Commands[/bold cyan] 🌟
+
+[yellow]Avatar Control:[/yellow]
+• switch <avatar>    - Switch to specific avatar (e.g., 'switch bunni')
+• summon <shortcut>  - Quick avatar summon (e.g., 'summon m' for Mushak)
+• delegate <task>    - Auto-delegate task to best avatar(s)
+
+[yellow]Advanced Features:[/yellow]
+• collaborate <avatars> <task>  - Multi-avatar collaboration
+• status             - Show all avatar statuses and recent activity
+• customize <avatar> - Personalize avatar behavior
+• learn feedback     - Provide learning feedback for current avatar
+
+[yellow]Quick Chat:[/yellow]
+• Just type naturally to chat with current avatar
+• Use @<avatar> in your message to include specific avatars
+• Type 'dharma' for wisdom, 'meditate' for focus mode
+""",
+            title="✨ Welcome to Enhanced Dharmic Computing",
+            border_style="purple"
+        )
+        
+        self.console.print(instructions)
+    
+    async def process_command(self, user_input: str) -> bool:
+        """Process special commands and avatar interactions"""
+        
+        if not user_input.strip():
+            return False
+        
+        # Handle quick avatar switching with shortcuts
+        if user_input.lower() in self.avatar_shortcuts:
+            await self.switch_avatar(self.avatar_shortcuts[user_input.lower()])
+            return False
+        
+        # Parse command
+        parts = user_input.strip().split()
+        command = parts[0].lower()
+        args = parts[1:] if len(parts) > 1 else []
+        
+        if command == 'switch' and args:
+            await self.switch_avatar(args[0])
+        elif command == 'summon' and args:
+            shortcut = args[0].lower()
+            if shortcut in self.avatar_shortcuts:
+                await self.switch_avatar(self.avatar_shortcuts[shortcut])
+            else:
+                self.console.print(f"[red]Unknown avatar shortcut: {shortcut}[/red]")
+        elif command == 'delegate':
+            await self.delegate_task(' '.join(args))
+        elif command == 'collaborate':
+            await self.collaborate_avatars(' '.join(args))
+        elif command == 'status':
+            await self.show_avatar_status()
+        elif command == 'list':
+            self.display_enhanced_greeting()
+        elif command == 'help':
+            self.show_help()
+        elif command in ['exit', 'quit', 'bye', 'namaste']:
+            self.console.print("[purple]🕉️ May dharma guide your digital path. Until we meet again in the conscious realm.[/purple]")
+            return True
+        else:
+            # Regular conversation with current avatar
+            await self.converse_with_avatar(user_input)
+        
+        return False
+    
+    async def switch_avatar(self, avatar_name: str):
+        """Switch to a different avatar"""
+        avatar_name = avatar_name.lower().replace('-', '_')
+        
+        # Validate avatar name
+        valid_avatars = ['krix', 'mushak', 'nandi', 'shera', 'bunni', 'kalkian', 
+                        'nag', 'chetak', 'goat', 'monki', 'roosty', 'chew_chew', 'chill_pig']
+        
+        if avatar_name not in valid_avatars:
+            self.console.print(f"[red]Unknown avatar: {avatar_name}[/red]")
+            self.console.print(f"[yellow]Available avatars: {', '.join(valid_avatars)}[/yellow]")
+            return
+        
+        self.current_avatar = avatar_name
+        
+        # Get avatar greeting
+        avatar_config = self.communication_engine.avatar_personalities.get(avatar_name, {})
+        greeting = avatar_config.get('interaction_style', {}).get('greeting', 
+                                                                f"Namaste! {avatar_name.title()} is now active.")
+        
+        self.console.print(Panel(
+            f"[bold green]{greeting}[/bold green]",
+            title=f"🔄 Switched to {avatar_name.title()}",
+            border_style="green"
+        ))
+    
+    async def delegate_task(self, task_description: str):
+        """Use intelligent task delegation"""
+        if not task_description:
+            self.console.print("[yellow]Please provide a task description[/yellow]")
+            return
+        
+        with Live(Spinner("dots", text="Analyzing task and selecting optimal avatars..."), refresh_per_second=4):
+            delegation_result = await self.task_delegator.delegate_task(task_description)
+        
+        # Display delegation results
+        self.console.print(Panel(
+            f"""[bold]Task Analysis Complete[/bold]
+
+📋 [cyan]Task:[/cyan] {task_description}
+🎯 [green]Assigned Avatars:[/green] {', '.join(delegation_result['assigned_avatars'])}
+⚡ [yellow]Complexity:[/yellow] {delegation_result['complexity']}
+🏷️ [blue]Domain:[/blue] {delegation_result['domain']}
+🔧 [magenta]Strategy:[/magenta] {delegation_result['delegation_strategy']}
+""",
+            title="🎯 Task Delegation Results",
+            border_style="cyan"
+        ))
+        
+        # Execute with assigned avatars
+        for avatar in delegation_result['assigned_avatars']:
+            self.console.print(f"\n💬 [bold]{avatar.title()}[/bold] is working on this task...")
+            await self.converse_with_avatar(task_description, avatar)
+    
+    async def converse_with_avatar(self, user_input: str, specific_avatar: str = None):
+        """Have a conversation with an avatar"""
+        target_avatar = specific_avatar or self.current_avatar
+        
+        with Live(Spinner("dots", text=f"Consulting {target_avatar.title()}..."), refresh_per_second=4):
+            response = await self.communication_engine.process_conversation(
+                avatar_name=target_avatar,
+                user_input=user_input,
+                session_id=self.active_session
+            )
+        
+        if 'error' not in response:
+            self.console.print(f"\n[bold purple]{target_avatar.title()}:[/bold purple] {response['response']}")
+            
+            # Show mood state if changed
+            if response.get('mood_state') != 'neutral':
+                self.console.print(f"[dim]💭 Detected mood: {response['mood_state']}[/dim]")
+        else:
+            self.console.print(f"[red]Error from {target_avatar}: {response['response']}[/red]")
+    
+    async def show_avatar_status(self):
+        """Display comprehensive avatar system status"""
+        status_table = Table(title="🌐 OMNet Avatar Network Status", show_header=True)
+        status_table.add_column("Avatar", style="cyan")
+        status_table.add_column("Current Activity", style="green")
+        status_table.add_column("Model", style="yellow")
+        status_table.add_column("Load", style="magenta")
+        
+        # Mock status data - in real implementation, get from OMNet
+        avatars_status = [
+            ("Krix", "System Guidance", "deepseek-r1:8b", "Normal"),
+            ("Mushak", "Code Analysis", "deepseek-r1:8b", "High"),
+            ("Bunni", "Content Creation", "dolphin-mixtral:8x7b", "Low"),
+            ("Nandi", "Resource Monitoring", "dolphin-mixtral:8x7b", "Normal")
+        ]
+        
+        for avatar, activity, model, load in avatars_status:
+            status_table.add_row(avatar, activity, model, load)
+        
+        self.console.print(status_table)
+    
+    def show_help(self):
+        """Display comprehensive help"""
+        help_text = """
+[bold cyan]Enhanced Krix-Term Help[/bold cyan]
+
+[yellow]Basic Conversation:[/yellow]
+• Just type naturally to chat with the current avatar
+• The avatar will respond based on their personality and expertise
+
+[yellow]Avatar Management:[/yellow]
+• switch <name>     - Switch to specific avatar
+• summon <shortcut> - Quick switch using single letter
+• list              - Show all available avatars
+
+[yellow]Task Management:[/yellow]
+• delegate <task>   - Auto-assign task to best avatar(s)
+• status           - Show system and avatar status
+
+[yellow]Special Commands:[/yellow]
+• dharma           - Get dharmic wisdom
+• meditate         - Enter focus mode
+• help             - Show this help
+• exit/quit/bye    - Leave Krix-Term
+
+[yellow]Avatar Shortcuts:[/yellow]
+m=Mushak, n=Nandi, s=Shera, b=Bunni, k=Kalkian, g=Nag,
+c=Chetak, a=G.O.A.T., o=Monki, r=Roosty, w=Chew-Chew, p=Chill-Pig
+"""
+        self.console.print(Panel(help_text, border_style="blue"))
+    
+    async def run_enhanced_session(self):
+        """Main interactive session with enhanced features"""
+        self.display_enhanced_greeting()
+        
+        while True:
+            try:
+                user_input = prompt(
+                    f"🔮 [{self.current_avatar}] ",
+                    completer=self.completer
+                )
+                
+                should_exit = await self.process_command(user_input)
+                if should_exit:
+                    break
+                    
+            except KeyboardInterrupt:
+                self.console.print("\n[purple]🕉️ Digital peace in all realms[/purple]")
+                break
+            except Exception as e:
+                self.console.print(f"[red]Unexpected error: {str(e)}[/red]")
+
+async def main():
+    """Enhanced main entry point with avatar selection"""
+    krix = EnhancedKrixTerm()
+    await krix.run_enhanced_session()
+
+if __name__ == "__main__":
+    asyncio.run(main())

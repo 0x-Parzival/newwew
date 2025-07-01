@@ -1,0 +1,6 @@
+# Inference settings for AI system
+inference:
+  default_model: mistral
+  max_concurrent_requests: 4
+  timeout_seconds: 30
+  log_level: INFO

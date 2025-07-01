@@ -1,0 +1,10 @@
+# Sample audit-config.yaml
+# Copy to audit-config.yaml and edit as needed
+rules:
+  - id: 1
+    description: "No root login via SSH"
+    enabled: true
+  - id: 2
+    description: "Password complexity enforced"
+    enabled: true
+# ... add more rules as needed 

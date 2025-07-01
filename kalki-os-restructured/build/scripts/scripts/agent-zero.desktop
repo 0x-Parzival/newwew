@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Agent Zero AI (Kalki OS)
+Comment=Launch Agent Zero AI Framework, fully integrated with Kalki OS
+Exec=bash -c 'cd $(dirname %k)/.. && ./scripts/install-agent-zero.sh'
+Icon=/usr/share/icons/hicolor/128x128/apps/kalki-agent-zero.png
+Type=Application
+Categories=Utility;AI;System;Kalki;
+Terminal=false
+StartupNotify=true
+X-KalkiOS-Integrated=true
+X-KalkiOS-Session=agent-zero
+# This launcher ensures Agent Zero runs in Docker, opens the web UI, and is fully compatible with Kalki OS session management and theming. 

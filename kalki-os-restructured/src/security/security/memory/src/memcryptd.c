@@ -1,0 +1,1 @@
+// Placeholder for memcryptd.c from kalki_half. Copy the actual code here for full migration. 

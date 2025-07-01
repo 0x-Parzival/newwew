@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Startup Video
+Exec=mpv --fs --no-border --quiet /usr/share/kalki/startup.mp4
+X-GNOME-Autostart-enabled=true
+NoDisplay=true 

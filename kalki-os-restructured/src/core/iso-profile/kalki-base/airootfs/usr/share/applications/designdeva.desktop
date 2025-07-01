@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=DesignDeva
+GenericName=Dharmic Design Studio
+Comment=Create beautiful themes and UI designs with AI assistance
+Exec=designdeva %F
+Icon=preferences-desktop-theme
+Terminal=false
+Categories=Graphics;GTK;Development;
+Keywords=design;theme;ui;ux;graphics;dharmic;ai;art;
+StartupNotify=true
+MimeType=application/x-designdeva-project;application/json;image/svg+xml;image/png;image/jpeg;

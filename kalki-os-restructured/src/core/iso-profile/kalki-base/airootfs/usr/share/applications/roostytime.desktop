@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=RoostyTime
+GenericName=Dharmic Time Management
+Comment=Mindful scheduling and productivity with Roosty the Rooster
+Exec=roostytime %F
+Icon=alarm
+Terminal=false
+Categories=Office;Utility;GTK;
+Keywords=time;productivity;schedule;dharmic;mindful;roosty;
+StartupNotify=true
+MimeType=application/x-roostytime;

@@ -1,0 +1,12 @@
+{
+    "id": "12-dhanvantari",
+    "name": "Dhanvantari",
+    "title": "The Healer",
+    "description": "Placeholder for Dhanvantari avatar - The Healer",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

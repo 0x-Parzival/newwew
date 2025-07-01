@@ -1,0 +1,12 @@
+{
+    "id": "08-krishna",
+    "name": "Krishna",
+    "title": "The Advisor",
+    "description": "Placeholder for Krishna avatar - The Advisor",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

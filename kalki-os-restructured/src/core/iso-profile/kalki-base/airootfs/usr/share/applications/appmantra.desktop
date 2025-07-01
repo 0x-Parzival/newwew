@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=AppMantra
+GenericName=Dharmic Application Store
+Comment=Discover and install applications with dharmic principles
+Exec=appmantra %F
+Icon=system-software-install
+Terminal=false
+Categories=System;Utility;GTK;
+Keywords=app;store;install;dharmic;software;manager;
+StartupNotify=true
+MimeType=application/x-appmantra;

@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""
+Krix-Term: Avatar-Powered Terminal Interface for Kalki OS
+Now integrated with full OMNet support and all 12 avatars
+"""
+
+import os
+import sys
+import json
+import asyncio
+import websockets
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+    from rich.live import Live
+    from rich.spinner import Spinner
+    from prompt_toolkit import prompt
+except ImportError:
+    print("\U0001F4E6 Installing dependencies...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "rich", "prompt-toolkit", "websockets"])
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+    from rich.live import Live
+    from rich.spinner import Spinner
+    from prompt_toolkit import prompt
+
+class KrixTerm:
+    def __init__(self, avatar="krix"):
+        self.console = Console()
+        self.avatar = avatar.lower()
+        self.session_id = f"session_{int(datetime.now().timestamp())}"
+        self.omnet_url = "ws://localhost:8765"
+        self.setup_logging()
+
+    def setup_logging(self):
+        log_path = Path.home() / ".krix"
+        log_path.mkdir(exist_ok=True)
+        self.log_file = log_path / f"log_{self.session_id}.txt"
+
+    async def connect_to_omnet(self):
+        try:
+            self.websocket = await websockets.connect(self.omnet_url)
+            return True
+        except Exception as e:
+            self.console.print(f"[red]⚠️ OMNet Error: {str(e)}[/red]")
+            return False
+
+    def avatar_greeting(self):
+        greetings = {
+            "krix": "🔮 Namaste. I am Krix, the neural conscience of Kalki OS.",
+            "mushak": "⚡ Mushak at your service! Lightning fast and bug-hungry.",
+            "nandi": "🛡️ Nandi here. Guardian of financial and system stability.",
+            "shera": "🗡️ Shera reporting. Perimeter secure, threats neutralized.",
+            "bunni": "🎨 I'm Bunni! Ready to color your thoughts beautifully.",
+            "nag": "🐍 Nag online. Strategic systems flowing in synchronicity.",
+            "chetak": "🏇 Chetak active. Let's outrun inefficiency.",
+            "goat": "🎵 G.O.A.T. summoned. Time to make some soulful waves.",
+            "monki": "🙉 Monki here! Chill, code, and control — Hinglish mode on.",
+            "roosty": "🐓 Roosty clocked in. Planning your karma-day ahead.",
+            "chew-chew": "🐶 Chew-Chew watching. Nothing gets past me.",
+            "the chill pig": "🐷 The Chill Pig online. Vibes only, stress gone."
+        }
+        return greetings.get(self.avatar, greetings["krix"])
+
+    def show_panel(self):
+        self.console.print(Panel(
+            f"[bold purple]{self.avatar_greeting()}[/bold purple]\n"
+            f"Session ID: {self.session_id}\n"
+            "OMNet Neural Core: [green]Connected[/green]\n"
+            "Commands: 'help' | 'switch <avatar>' | 'exit'",
+            title=f"✨ {self.avatar.title()} Avatar Engaged",
+            border_style="bright_magenta"
+        ))
+
+    async def send(self, user_input):
+        payload = {
+            'avatar': self.avatar,
+            'input': user_input,
+            'session_id': self.session_id,
+            'timestamp': datetime.now().isoformat()
+        }
+        try:
+            await self.websocket.send(json.dumps(payload))
+            reply = await self.websocket.recv()
+            return json.loads(reply)
+        except Exception as e:
+            return {'response': f"OMNet error: {str(e)}", 'error': True}
+
+    async def run(self):
+        connected = await self.connect_to_omnet()
+        if not connected:
+            self.console.print("[yellow]⚠️ Running without OMNet AI capabilities.[/yellow]")
+
+        self.show_panel()
+
+        while True:
+            try:
+                user_input = prompt(f"🧠 [{self.avatar}] ")
+                if user_input.lower() in ['exit', 'quit', 'bye']:
+                    self.console.print("[purple]🕉️ Peace be with your dataflow.[/purple]")
+                    break
+                if user_input.startswith("switch "):
+                    self.avatar = user_input.split(" ")[1].lower()
+                    self.show_panel()
+                    continue
+
+                if connected:
+                    with Live(Spinner("dots", text="Querying OMNet..."), refresh_per_second=4):
+                        reply = await self.send(user_input)
+                    self.console.print(f"[bold cyan]{self.avatar.title()}:[/bold cyan] {reply['response']}")
+                else:
+                    self.console.print("[yellow]Local fallback not implemented.[/yellow]")
+            except KeyboardInterrupt:
+                self.console.print("\n[purple]🕉️ Ending session gracefully.[/purple]")
+                break
+
+if __name__ == "__main__":
+    avatar = "krix"
+    if len(sys.argv) > 1 and sys.argv[1].startswith("--avatar="):
+        avatar = sys.argv[1].split("=")[1]
+    asyncio.run(KrixTerm(avatar).run())

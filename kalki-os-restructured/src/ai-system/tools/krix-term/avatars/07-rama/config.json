@@ -1,0 +1,12 @@
+{
+    "id": "07-rama",
+    "name": "Rama",
+    "title": "The Ruler",
+    "description": "Placeholder for Rama avatar - The Ruler",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

@@ -1,0 +1,12 @@
+{
+    "id": "09-buddha",
+    "name": "Buddha",
+    "title": "The Teacher",
+    "description": "Placeholder for Buddha avatar - The Teacher",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

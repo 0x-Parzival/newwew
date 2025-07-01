@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Kalki Dharma
+Description=Kalki OS Divine Boot Experience
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/kalki-dharma
+ScriptFile=/usr/share/plymouth/themes/kalki-dharma/kalki-dharma.script

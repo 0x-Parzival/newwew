@@ -1,0 +1,94 @@
+#!/bin/bash
+# Kalki OS Dynamic Wallpaper Manager
+# Manages dynamic wallpapers based on time of day and system events
+
+set -euo pipefail
+
+# Configuration
+WALLPAPER_DIR="/opt/kalki/wallpapers"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/kalki"
+LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/kalki/wallpaper.log"
+HYPRPAPER_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprpaper.conf"
+
+# Time-based wallpaper selection
+get_time_based_wallpaper() {
+    local hour=$(date +%H)
+    local wallpaper=""
+    
+    if [ $hour -ge 5 ] && [ $hour -lt 8 ]; then
+        wallpaper="dawn"
+    elif [ $hour -ge 8 ] && [ $hour -lt 17 ]; then
+        wallpaper="day"
+    elif [ $hour -ge 17 ] && [ $hour -lt 20 ]; then
+        wallpaper="dusk"
+    else
+        wallpaper="night"
+    fi
+    
+    echo "$wallpaper"
+}
+
+# Update hyprpaper configuration
+update_hyprpaper() {
+    local theme="$1"
+    local wallpaper="$WALLPAPER_DIR/dharmic-cosmos-${theme}.jpg"
+    
+    # Create backup of current config
+    cp "$HYPRPAPER_CONF" "${HYPRPAPER_CONF}.bak" 2>/dev/null || true
+    
+    # Generate new config
+    cat > "$HYPRPAPER_CONF" << EOF
+preload = $WALLPAPER_DIR/dharmic-cosmos-dawn.jpg
+preload = $WALLPAPER_DIR/dharmic-cosmos-day.jpg
+preload = $WALLPAPER_DIR/dharmic-cosmos-dusk.jpg
+preload = $WALLPAPER_DIR/dharmic-cosmos-night.jpg
+
+wallpaper = ,$wallpaper
+splash = false
+ipc = on
+EOF
+    
+    # Log the change
+    echo "$(date): Set wallpaper to $wallpaper" >> "$LOG_FILE"
+    
+    # Reload hyprpaper if running
+    if pgrep -x "hyprpaper" > /dev/null; then
+        killall -SIGUSR2 hyprpaper
+    fi
+}
+
+# Initialize wallpaper directories
+initialize_directories() {
+    mkdir -p "$WALLPAPER_DIR"/{dawn,day,dusk,night}
+    mkdir -p "$(dirname "$LOG_FILE")"
+    mkdir -p "$(dirname "$HYPRPAPER_CONF")"
+    
+    # Set default permissions
+    chmod 755 "$WALLPAPER_DIR"
+    chmod 644 "$WALLPAPER_DIR"/*/* 2>/dev/null || true
+}
+
+# Main function
+main() {
+    local action="${1:-auto}"
+    
+    case "$action" in
+        "auto")
+            local theme=$(get_time_based_wallpaper)
+            update_hyprpaper "$theme"
+            ;;
+        "dawn"|"day"|"dusk"|"night")
+            update_hyprpaper "$action"
+            ;;
+        "init")
+            initialize_directories
+            ;;
+        *)
+            echo "Usage: $0 [auto|dawn|day|dusk|night|init]"
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function
+main "$@"

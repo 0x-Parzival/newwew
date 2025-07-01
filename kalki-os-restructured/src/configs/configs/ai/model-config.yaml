@@ -1,0 +1,14 @@
+# Model configuration for AI system
+models:
+  - name: mistral
+    path: /models/mistral
+    parameters:
+      temperature: 0.7
+      top_p: 0.95
+      max_tokens: 2048
+  - name: tinyllama
+    path: /models/tinyllama
+    parameters:
+      temperature: 0.5
+      top_p: 0.9
+      max_tokens: 1024

@@ -1,0 +1,25 @@
+[Unit]
+Description=Kalki OS Voice Service
+After=network.target sound.target omnet.service
+Requires=omnet.service
+
+[Service]
+Type=simple
+User=kalki
+Group=audio
+Environment=PYTHONUNBUFFERED=1
+Environment=PULSE_RUNTIME_PATH=/run/user/1000/pulse/
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+WorkingDirectory=/opt/kalki/voice
+ExecStart=/usr/local/bin/kalki-voice
+Restart=always
+RestartSec=5
+
+# Audio device access
+DeviceAllow=/dev/snd/*
+DeviceAllow=/dev/dsp
+DeviceAllow=/dev/audio
+DeviceAllow=/dev/mixer
+
+[Install]
+WantedBy=multi-user.target

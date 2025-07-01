@@ -1,0 +1,12 @@
+{
+    "id": "01-matsya",
+    "name": "Matsya",
+    "title": "The",
+    "description": "Placeholder for Matsya avatar - The",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

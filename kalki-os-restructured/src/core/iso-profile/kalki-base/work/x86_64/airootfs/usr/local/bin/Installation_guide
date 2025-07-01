@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+exec lynx 'https://kalki-os.org/docs/installation_guide' # Placeholder for Kalki OS guide

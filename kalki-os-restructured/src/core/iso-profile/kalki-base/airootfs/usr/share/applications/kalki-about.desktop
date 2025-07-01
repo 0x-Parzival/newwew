@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=About Kalki OS
+GenericName=System Information
+Comment=Learn about your dharmic computing platform
+Icon=kalki-logo
+Exec=krix-term --about
+Terminal=false
+NoDisplay=false
+Categories=System;Utility;
+Keywords=about;system;information;kalki;
+StartupNotify=true

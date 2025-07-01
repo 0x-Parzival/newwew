@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Dharmic Notes
+Comment=A mindful note-taking application
+Exec=dharmic-notes
+Icon=accessories-text-editor
+Terminal=true
+Categories=Utility;TextEditor;
+Keywords=notes;mindful;writing;text;dharmic;
+StartupNotify=true

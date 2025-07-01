@@ -1,0 +1,12 @@
+{
+    "id": "05-vamana",
+    "name": "Vamana",
+    "title": "The Expander",
+    "description": "Placeholder for Vamana avatar - The Expander",
+    "version": "1.0.0",
+    "author": "Dharma OS",
+    "enabled": true,
+    "ai_capable": true,
+    "features": ["placeholder"],
+    "dependencies": []
+}

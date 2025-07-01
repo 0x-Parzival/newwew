@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=BunniWrite
+GenericName=Dharmic Writing Studio
+Comment=AI-assisted writing with spiritual mindfulness
+Exec=bunniwrite %F
+Icon=accessories-text-editor
+Terminal=false
+Categories=Office;WordProcessor;TextEditor;
+Keywords=writing;editor;ai;dharmic;bunni;creative;
+StartupNotify=true
+MimeType=text/plain;text/markdown;text/x-markdown;text/x-python;text/x-c++;text/x-c;text/x-chdr;text/x-csrc;text/x-java;text/mathml;text/x-copying;text/x-csh;text/x-dtd;text/x-haskell;text/x-java;text/x-literate-haskell;text/x-moc;text/x-pascal;text/x-tcl;text/x-tex;application/x-shellscript;application/x-tex;application/xml;text/xml;text/x-c++hdr;text/x-python3;text/x-sql;text/x-diff;text/x-patch;text/x-readme;text/x-log;text/x-changelog;text/x-rst;text/x-texinfo;text/x-po;text/x-gettext-translation;text/x-po;text/x-gettext-translation-template;text/x-ldif;text/x-ocl;text/x-mpsim;text/x-ms-regedit;text/x-objcsrc;text/x-python3;text/x-scala;text/x-scheme;text/x-scheme;text/x-sed;text/x-sh;text/x-sql;text/x-troff-man;text/x-troff-me;text/x-troff-mm;text/x-troff-ms;text/x-verilog;text/x-vhdl;
+StartupWMClass=BunniWrite
