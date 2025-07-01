@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Plymouth
-Exec=/usr/bin/plymouthd --tty=tty1 --mode=boot --pid-file=/run/plymouth/pid --attach-to-session
-Terminal=false
-NoDisplay=true

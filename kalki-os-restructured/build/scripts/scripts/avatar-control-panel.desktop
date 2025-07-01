@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Avatar Control Panel
-Comment=Manage AI avatars, privacy, and system settings
-Exec=python3 /opt/kalki/scripts/avatar-control-panel.py
-Icon=avatar-default-symbolic
-Terminal=false
-Categories=Settings;System;Utility;
-Keywords=avatar;ai;settings;privacy;control panel; 
